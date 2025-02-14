@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DrawIt</string>
+
+    <string name="login">Вход</string>
+    <string name="email">Электронная почта</string>
+    <string name="no_account">Нет аккаунта? Зарегистрироваться</string>
+    <string name="password">Пароль</string>
+    <string name="login2">Войти</string>
+    <string name="tag">Тег (например user1)</string>
+    <string name="name">Имя</string>
+    <string name="register">Зарегистрироваться</string>
+    <string name="choose_color">Выберите цвет</string>
+    <string name="add_member">Добавить участника</string>
+    <string name="usertag">\@usertag</string>
+    <string name="create_new_whiteboard">Создать новую доску</string>
+    <string name="create">Создать</string>
+
+    <string name="pick_color">Выберите цвет</string>
+    <string name="apply">Применить</string>
+    <string name="add_text">Добавить текст</string>
+
+    <string name="t_please_fill_out_fields">Пожалуйста, заполните все поля для ввода</string>
+    <string name="t_successfully_logged_in">Успешно совершен вход в аккаунт</string>
+    <string name="t_error_occurred">Возникла ошибка при входе в аккаунт</string>
+    <string name="t_registration_error">Ошибка регистрации</string>
+    <string name="t_profile_image_uploaded_successfully">Фото профиля успешно загружено</string>
+    <string name="t_profile_image_uploading_failure">Ошибка загрузки фото профиля</string>
+    <string name="t_no_gallery_permission">Нет разрешения на доступ к галерее</string>
+    <string name="t_user_id_not_found">Не найден id пользователя</string>
+</resources>

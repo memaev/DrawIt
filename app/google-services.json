@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "938789854548",
+    "firebase_url": "https://drawit-74c99-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "drawit-74c99",
+    "storage_bucket": "drawit-74c99.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:938789854548:android:9f3fd228c6e410d712fcc1",
+        "android_client_info": {
+          "package_name": "com.llc.drawit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDj56DUBzfDhVzPD7H-RfnQUseLY9ozWys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
