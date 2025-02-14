@@ -6,4 +6,4 @@ Welcome to DrawIt repository. DrawIt is an officially open-source android applic
 - Source code programming language: Java
 - Used technologies/frameworks/libraries: Firebase (Auth|Realtime Database|Storage|Analytics), Glide, Dagger Hilt (for Dependency Injection)
 
-## App is open-source and uses MIT license
+### App is open-source and is under MIT license
