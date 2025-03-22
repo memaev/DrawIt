@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="30dp"
+    android:paddingBottom="15dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Выберите цвет"
+        android:textSize="20sp"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp">
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/color_black"
+            android:background="@drawable/rounded_shape"
+            android:backgroundTint="@color/black"
+            />
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/color_red"
+            android:background="@drawable/rounded_shape"
+            android:backgroundTint="@android:color/holo_red_dark"
+            android:layout_marginStart="15dp"
+            />
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/color_green"
+            android:background="@drawable/rounded_shape"
+            android:backgroundTint="@android:color/holo_green_dark"
+            android:layout_marginStart="15dp"
+            />
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/color_blue"
+            android:background="@drawable/rounded_shape"
+            android:backgroundTint="@android:color/holo_blue_dark"
+            android:layout_marginStart="15dp"
+            />
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_color_picked"
+        android:text="Выберите цвет"
+        android:layout_gravity="center"
+        android:layout_marginTop="15dp"
+        android:textSize="17sp"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_select_color"
+        android:backgroundTint="@color/blue"
+        android:text="@string/apply"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        />
+
+</LinearLayout>

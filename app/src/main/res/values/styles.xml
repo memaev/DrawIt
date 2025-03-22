@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="EditText">
+        <item name="android:background">@drawable/edit_text_background_shape</item>
+        <item name="android:padding">15dp</item>
+    </style>
+</resources>

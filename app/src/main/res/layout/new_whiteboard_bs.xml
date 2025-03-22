@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/tv_new_whiteboard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:text="@string/create_new_whiteboard"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/et_whiteboard_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_text_background_shape"
+        android:text="Untitled Whiteboard"
+        android:padding="15dp"
+        android:layout_marginTop="25dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_new_whiteboard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginHorizontal="20dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_create_whiteboard"
+        android:text="@string/create"
+        android:textSize="20sp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/blue"
+        app:cornerRadius="10dp"
+        android:paddingVertical="15dp"
+        android:layout_marginTop="15dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/et_whiteboard_name"
+        android:layout_marginHorizontal="20dp"
+        android:drawableTint="@color/white"
+        android:drawableEnd="@drawable/baseline_arrow_forward_24"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

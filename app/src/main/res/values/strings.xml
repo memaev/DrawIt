@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">DrawIt</string>
+
+    <string name="login">Login</string>
+    <string name="email">Email</string>
+    <string name="no_account">No account? Sign up</string>
+    <string name="password">Password</string>
+    <string name="login2">Login</string>
+    <string name="tag">Tag (for example user1)</string>
+    <string name="name">Name</string>
+    <string name="register">Sign up</string>
+    <string name="choose_color">Choose color</string>
+    <string name="add_member">Add member</string>
+    <string name="usertag">\@usertag</string>
+    <string name="create_new_whiteboard">Create new whiteboard</string>
+    <string name="create">Create</string>
+
+    <string name="pick_color">Pick color</string>
+    <string name="apply">Apply</string>
+    <string name="add_text">Add text</string>
+
+    <string name="t_please_fill_out_fields">Please, fill out all text fields</string>
+    <string name="t_successfully_logged_in">Successfully logged in</string>
+    <string name="t_error_occurred">Error occurred while signing in</string>
+    <string name="t_registration_error">Registration failed with error</string>
+    <string name="t_profile_image_uploaded_successfully">Profile image uploaded successfully</string>
+    <string name="t_profile_image_uploading_failure">Failed to upload profile image</string>
+    <string name="t_no_gallery_permission">There is no gallery permission</string>
+    <string name="t_user_id_not_found">User id not found></string>
+</resources>
