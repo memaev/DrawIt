@@ -227,9 +227,9 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
 
     @Override
     public void stopDrawingsListener(String whiteboardId) {
-        loadedPaths.clear(); //очищаем список загруженных рисунков
+        loadedPaths.clear(); // clearing the list of already loaded drawings
 
-        //удаляем слушатель изменений в базе данных
+        // removing onValueChangedListener
         HFirebase.DB.child(Constants.WHITEBOARDS).child(whiteboardId).child(Constants.POINTS)
                 .removeEventListener(valueEventListener);
     }
