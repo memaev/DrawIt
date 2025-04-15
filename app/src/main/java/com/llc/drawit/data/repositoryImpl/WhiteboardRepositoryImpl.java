@@ -37,11 +37,11 @@ import dagger.Lazy;
 
 public class WhiteboardRepositoryImpl implements WhiteboardRepository {
 
-    private ValueEventListener valueEventListener; //слушатель изменений в базе данных
-    private Lazy<UserRepository> userRepository; //репозиторий пользователей
-    private HashMap<String, String> loadedPaths = new HashMap<>(); //храним id-шники уже загруженных рисунков, чтобы не загружать их снова
+    private ValueEventListener valueEventListener; // listener on changes in realtime database
+    private Lazy<UserRepository> userRepository; // repository for user management in the database
+    private HashMap<String, String> loadedPaths = new HashMap<>(); //save ids of already loaded drawings so we won't need to load them again
 
-    @Inject // внедряем репозиторий пользователей
+    @Inject // dependency injection of UserRepository
     public WhiteboardRepositoryImpl(Lazy<UserRepository> userRepository) {
         this.userRepository = userRepository;
     }
@@ -53,7 +53,7 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
             return;
         }
 
-        // получаем данные о доске по id
+        // getting whiteboard data by id
         HFirebase.DB.child(Constants.WHITEBOARDS).child(whiteboardId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -80,7 +80,7 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
             return;
         }
 
-        // если пользователь один, то это значит, что он создатель доски и нам не нужно загружать его аватарку
+        // if there is only 1 user then he is a whiteboard creator a we don't need to load his avatar
         if (members.equals(Objects.requireNonNull(HFirebase.AUTH.getCurrentUser()).getUid()) || members.isEmpty()) {
             manager.onResult(new LoadData<>(Result.SUCCESS, new ArrayList<>()));
             return;
@@ -103,7 +103,7 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
     }
 
     @Override
-    public void loadDrawing(String drawingPath, String text /* Если мы должны отобразить текст */, int color, long timestamp, LoadManager<Pair<Stroke, ArrayList<CPoint>>> manager) {
+    public void loadDrawing(String drawingPath, String text /* If we need to display text */, int color, long timestamp, LoadManager<Pair<Stroke, ArrayList<CPoint>>> manager) {
         //получаем все точки данного рисунка в строке, чтобы увеличить скорость зазгрузки и обновления
         String[] pointsStrArr = drawingPath.split("\\|"); //разделяем точки по символу "|"
 
