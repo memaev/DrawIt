@@ -26,6 +26,7 @@ import com.google.firebase.auth.PhoneAuthProvider;
 import java.util.concurrent.TimeUnit;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import maevskii.studio.loading_button.LoadingButton;
 
 @AndroidEntryPoint
 public class LoginActivity extends AppCompatActivity {

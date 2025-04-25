@@ -11,6 +11,7 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 material = "1.12.0"
 swiperefreshlayout = "1.1.0"
+loadingButton = "v1.0.0"
 
 [libraries]
 android-material-material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -28,6 +29,7 @@ hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt"
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 junit = { module = "junit:junit", version.ref = "junit" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
+loading-button = { module = "com.github.memaev:LoadingButton", version.ref = "loadingButton" }
 
 [plugins]
 com-android-application = { id = "com.android.application", version.ref = "agp" }

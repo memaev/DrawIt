@@ -6,6 +6,6 @@
     <color name="grey">#F6F6F6</color>
     <color name="dark">#433E3E</color>
     <color name="blue">#4F76FF</color>
-    <color name="blue2">#664F76FF</color>
+    <color name="blue2">#664F76</color>
     <color name="transpanent">@android:color/transparent</color>
 </resources>

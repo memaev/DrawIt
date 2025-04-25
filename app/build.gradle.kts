@@ -56,4 +56,5 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.swiperefreshlayout)
     implementation(libs.circleimageview)
+    implementation(libs.loading.button)
 }

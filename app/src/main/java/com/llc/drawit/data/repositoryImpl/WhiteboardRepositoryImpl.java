@@ -33,6 +33,8 @@ import java.util.Objects;
 
 import javax.inject.Inject;
 
+import dagger.Lazy;
+
 public class WhiteboardRepositoryImpl implements WhiteboardRepository {
 
     private ValueEventListener valueEventListener; // listener on changes in realtime database

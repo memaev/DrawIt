@@ -122,7 +122,6 @@ public class UserRepositoryImpl implements UserRepository{
         HFirebase.DB.child(Constants.USERS).child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                //получаем данные пользователя
                 String name = NNull.str(snapshot.child(Constants.NAME).getValue());
                 String tag = NNull.str(snapshot.child(Constants.TAG).getValue());
                 String email = NNull.str(snapshot.child(Constants.EMAIL).getValue());
@@ -175,7 +174,6 @@ public class UserRepositoryImpl implements UserRepository{
     public void addWhiteboardId(String userId, String whiteboardId, LoadManager<String> manager) {
         HFirebase.DB.child(Constants.USERS).child(userId).child(Constants.WHITEBOARDS)
                 .get().addOnCompleteListener(task -> {
-                    // получаем id досок пользователя
                     // getting ids of user's whiteboards
                     if (!task.isSuccessful() || task.getResult().getValue() == null) {
                         manager.onResult(new LoadData<>(Result.FAILURE, null));

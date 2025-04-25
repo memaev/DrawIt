@@ -2,7 +2,8 @@
 <resources>
     <string name="app_name">DrawIt</string>
 
-    <string name="login">Вход</string>
+    <string name="welcome_back">Добро пожаловать в DrawIt</string>
+    <string name="login">Войдите в свой аккаунт</string>
     <string name="email">Электронная почта</string>
     <string name="no_account">Нет аккаунта? Зарегистрироваться</string>
     <string name="password">Пароль</string>

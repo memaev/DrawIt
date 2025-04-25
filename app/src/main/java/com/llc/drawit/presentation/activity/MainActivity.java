@@ -4,10 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
 import com.llc.drawit.databinding.ActivityMainBinding;
+import com.llc.drawit.domain.util.database.HFirebase;
 import com.llc.drawit.presentation.bottomSheet.BottomSheetNewWhiteboard;
 import com.llc.drawit.presentation.recyclerView.WhiteboardsAdapter;
 import com.llc.drawit.presentation.viewModel.MainActivityViewModel;
@@ -23,6 +26,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (HFirebase.AUTH.getCurrentUser() == null) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        }
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
