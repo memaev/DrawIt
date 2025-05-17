@@ -7,83 +7,183 @@
     android:background="@color/white"
     tools:context=".presentation.activity.RegisterActivity">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/card_view_image_person"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="50dp"
-        app:cardElevation="5dp"
-        android:layout_marginTop="80dp"
+        android:id="@+id/ll_join_us"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:layout_margin="45dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create_account"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/join_our_network"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ll_info_fields"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/image_person"
-            android:layout_width="110dp"
-            android:layout_height="110dp"
-            android:src="@drawable/image_person"
-            android:layout_margin="15dp"/>
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintBottom_toBottomOf="parent">
 
-    <EditText
-        android:id="@+id/edit_text_email"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        style="@style/EditText"
-        android:layout_marginHorizontal="50dp"
-        android:hint="@string/email"
-        android:layout_marginTop="120dp"
-        app:layout_constraintTop_toBottomOf="@id/card_view_image_person"
-        />
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_view_image_person"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="50dp"
+            app:cardElevation="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ll_join_us">
 
-    <EditText
-        android:id="@+id/edit_text_tag"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:hint="@string/tag"
-        style="@style/EditText"
-        android:layout_marginHorizontal="50dp"
-        android:layout_marginTop="10dp"
-        app:layout_constraintTop_toBottomOf="@id/edit_text_email"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/image_person"
+                android:layout_width="110dp"
+                android:layout_height="110dp"
+                android:layout_margin="15dp"
+                android:src="@drawable/image_person" />
+        </androidx.cardview.widget.CardView>
 
-    <EditText
-        android:id="@+id/edit_text_name"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:hint="@string/name"
-        style="@style/EditText"
-        android:layout_marginHorizontal="50dp"
-        android:layout_marginTop="10dp"
-        app:layout_constraintTop_toBottomOf="@id/edit_text_tag"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/ll_add_profile_photo"
+            android:orientation="horizontal"
+            android:padding="18dp"
+            android:layout_marginHorizontal="45dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/stroke_bakground">
 
-    <EditText
-        android:id="@+id/edit_text_password"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:hint="@string/password"
-        android:inputType="textPassword"
-        style="@style/EditText"
-        android:layout_marginHorizontal="50dp"
-        android:layout_marginTop="10dp"
-        app:layout_constraintTop_toBottomOf="@id/edit_text_name"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/add_profile_image"
+                />
 
-    <com.google.android.material.button.MaterialButton
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_profile_image"
+                android:layout_marginStart="10dp"
+                android:textSize="17sp"
+                />
+
+
+        </LinearLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/til_email"
+            android:layout_marginHorizontal="45dp"
+            android:layout_marginTop="10dp"
+            app:boxCornerRadiusTopStart="15dp"
+            app:boxCornerRadiusTopEnd="15dp"
+            app:boxCornerRadiusBottomStart="15dp"
+            app:boxCornerRadiusBottomEnd="15dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/email"
+                android:drawableStart="@drawable/email_icon"
+                android:drawablePadding="10dp"
+                android:inputType="textEmailAddress"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/til_usertag"
+            android:layout_marginHorizontal="45dp"
+            android:layout_marginTop="10dp"
+            app:boxCornerRadiusTopStart="15dp"
+            app:boxCornerRadiusTopEnd="15dp"
+            app:boxCornerRadiusBottomStart="15dp"
+            app:boxCornerRadiusBottomEnd="15dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_text_tag"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/tag"
+                android:drawableStart="@drawable/usertag_icon"
+                android:drawablePadding="10dp"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/til_username"
+            android:layout_marginHorizontal="45dp"
+            android:layout_marginTop="10dp"
+            app:boxCornerRadiusTopStart="15dp"
+            app:boxCornerRadiusTopEnd="15dp"
+            app:boxCornerRadiusBottomStart="15dp"
+            app:boxCornerRadiusBottomEnd="15dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_text_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/name"
+                android:drawableStart="@drawable/username_icon"
+                android:drawablePadding="10dp"
+                android:inputType="textPersonName"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/til_password"
+            android:layout_marginHorizontal="45dp"
+            android:layout_marginTop="10dp"
+            app:boxCornerRadiusTopStart="15dp"
+            app:boxCornerRadiusTopEnd="15dp"
+            app:boxCornerRadiusBottomStart="15dp"
+            app:boxCornerRadiusBottomEnd="15dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_text_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/password"
+                android:drawableStart="@drawable/password_icon"
+                android:drawablePadding="10dp"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+    <maevskii.studio.loading_button.LoadingButton
         android:id="@+id/button_register"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="80dp"
+        android:layout_marginHorizontal="45dp"
+        android:paddingVertical="5dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="40dp"
         android:text="@string/register"
-        android:layout_marginTop="40dp"
         app:backgroundTint="@color/blue"
         app:cornerRadius="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_text_password" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

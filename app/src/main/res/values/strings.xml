@@ -15,6 +15,9 @@
     <string name="usertag">\@usertag</string>
     <string name="create_new_whiteboard">Create new whiteboard</string>
     <string name="create">Create</string>
+    <string name="create_account">Create account</string>
+    <string name="join_our_network">Join our free network</string>
+    <string name="add_profile_image">Add profile image</string>
 
     <string name="pick_color">Pick color</string>
     <string name="apply">Apply</string>

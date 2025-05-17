@@ -16,6 +16,9 @@
     <string name="usertag">\@usertag</string>
     <string name="create_new_whiteboard">Создать новую доску</string>
     <string name="create">Создать</string>
+    <string name="create_account">Создать аккаунт</string>
+    <string name="join_our_network">Присоединитесь к нашей бесплатной сети</string>
+    <string name="add_profile_image">Добавить фотографию профиля</string>
 
     <string name="pick_color">Выберите цвет</string>
     <string name="apply">Применить</string>
