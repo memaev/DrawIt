@@ -29,6 +29,9 @@ public class RegisterActivityViewModel extends ViewModel {
     private MutableLiveData<Boolean> _loading = new MutableLiveData<>();
     public LiveData<Boolean> loading = _loading;
 
+    private MutableLiveData<Uri> _pickedUserProfileImage = new MutableLiveData<>(null);
+    public LiveData<Uri> pickedUserProfileImage = _pickedUserProfileImage;
+
     private StorageRepository storageRepository;
     private UserRepository userRepository;
 
@@ -36,6 +39,10 @@ public class RegisterActivityViewModel extends ViewModel {
     public RegisterActivityViewModel(StorageRepository storageRepository, UserRepository userRepository){
         this.storageRepository = storageRepository;
         this.userRepository = userRepository;
+    }
+
+    public void savePickedProfileImageUri(Uri uri) {
+        _pickedUserProfileImage.setValue(uri);
     }
 
     public void setProfileImage(String profileImageUrl){
@@ -59,6 +66,18 @@ public class RegisterActivityViewModel extends ViewModel {
     }
 
     public void register(User user, LoadManager<String> manager){
-        userRepository.register(user, manager);
+        _loading.postValue(true);
+        if (pickedUserProfileImage.getValue() != null) {
+            uploadImage(pickedUserProfileImage.getValue(), result -> {
+                if (result.getData() != null) {
+                    user.setProfileImageUrl(result.getData());
+                    userRepository.register(user, manager);
+                    _loading.postValue(false);
+                }
+            });
+        } else {
+            userRepository.register(user, manager);
+            _loading.postValue(false);
+        }
     }
 }

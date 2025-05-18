@@ -9,12 +9,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.llc.drawit.R;
@@ -33,7 +35,30 @@ public class RegisterActivity extends AppCompatActivity {
 
     private ActivityRegisterBinding binding;
     private RegisterActivityViewModel viewModel;
-    private LoadingAlertDialog loadingDialog;
+
+    // ActivityResultLauncher for picking an image and uploading to the server
+    ActivityResultLauncher<Intent> pickImageActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData()!=null && result.getData().getData()!=null){
+                    Uri filePath = result.getData().getData();
+                    viewModel.savePickedProfileImageUri(filePath);
+                }
+            }
+    );
+
+    //to obtain permission to access the gallery
+    ActivityResultLauncher<String> requestPermissionLauncher= registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted){
+                    Intent intent = new Intent();
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    pickImageActivityResultLauncher.launch(intent);
+                }else{
+                    Toast.makeText(getBaseContext(), getString(R.string.t_no_gallery_permission), Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,30 +67,11 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         viewModel = new ViewModelProvider(this).get(RegisterActivityViewModel.class);
-        loadingDialog = new LoadingAlertDialog();
 
-        binding.imagePerson.setOnClickListener(v -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
-                } else {
-                    Intent intent = new Intent();
-                    intent.setType("image/*");
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    pickImageActivityResultLauncher.launch(intent);
-                }
-            }else {
-                if (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                        || ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-                } else {
-                    Intent intent = new Intent();
-                    intent.setType("image/*");
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    pickImageActivityResultLauncher.launch(intent);
-                }
-            }
-        });
+        setStateObservers();
+
+        binding.imagePerson.setOnClickListener(v -> launchImagePicker());
+        binding.llAddProfilePhoto.setOnClickListener(v -> launchImagePicker());
 
         binding.buttonRegister.setOnClickListener(v -> {
             String email = binding.editTextEmail.getText().toString().trim();
@@ -90,45 +96,45 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    // ActivityResultLauncher for picking an image and uploading to the server
-    ActivityResultLauncher<Intent> pickImageActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData()!=null && result.getData().getData()!=null){
-                    Uri filePath = result.getData().getData();
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
+    private void launchImagePicker() {
+        String permission;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            permission = Manifest.permission.READ_MEDIA_IMAGES;
+        else
+            permission = Manifest.permission.READ_EXTERNAL_STORAGE;
 
-                        binding.imagePerson.setImageBitmap(bitmap);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    //when uploading a photo to the server, a loading dialog is shown
-                    loadingDialog.show(getSupportFragmentManager(), "loading");
-                    loadingDialog.setCancelable(false);
-                    viewModel.uploadImage(result.getData().getData(), res -> { // triggers after the photo is uploaded to the server
-                        loadingDialog.dismiss();
-                        if (res.getResultCode() == Result.SUCCESS) {
-                            Toast.makeText(this, getString(R.string.t_profile_image_uploaded_successfully), Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(this, getString(R.string.t_profile_image_uploading_failure), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }
-    );
-
-    //to obtain permission to access the gallery
-    ActivityResultLauncher<String> requestPermissionLauncher= registerForActivityResult(
-            new ActivityResultContracts.RequestPermission(), isGranted -> {
-        if (isGranted){
+        if (ContextCompat.checkSelfPermission(getBaseContext(), permission) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissionLauncher.launch(permission);
+        } else {
             Intent intent = new Intent();
             intent.setType("image/*");
             intent.setAction(Intent.ACTION_GET_CONTENT);
             pickImageActivityResultLauncher.launch(intent);
-        }else{
-            Toast.makeText(getBaseContext(), getString(R.string.t_no_gallery_permission), Toast.LENGTH_SHORT).show();
         }
-    });
+    }
+
+    private void setStateObservers() {
+        viewModel.pickedUserProfileImage.observe(this, uri -> {
+            if (uri == null) {
+                binding.llAddProfilePhoto.setVisibility(View.VISIBLE);
+                binding.cardViewImagePerson.setVisibility(View.GONE);
+            } else {
+                binding.llAddProfilePhoto.setVisibility(View.GONE);
+                binding.cardViewImagePerson.setVisibility(View.VISIBLE);
+                binding.imagePerson.setImageURI(uri);
+            }
+        });
+
+        viewModel.loading.observe(this, isLoading -> {
+            binding.buttonRegister.setLoading(isLoading);
+            binding.editTextEmail.setEnabled(!isLoading);
+            binding.editTextName.setEnabled(!isLoading);
+            binding.editTextTag.setEnabled(!isLoading);
+            binding.editTextPassword.setEnabled(!isLoading);
+            binding.llAddProfilePhoto.setEnabled(!isLoading);
+            binding.cardViewImagePerson.setEnabled(!isLoading);
+            binding.imagePerson.setEnabled(!isLoading);
+        });
+    }
+
 }
