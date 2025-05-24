@@ -6,10 +6,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector; // Added
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -33,24 +35,47 @@ public class DrawView extends View {
     public static final int COLOR_PEN = Color.RED;
     public static final float TOUCH_TOLERANCE = 4;
     public static final int DEFAULT_BG_COLOR = Color.WHITE;
+    public static final float CANVAS_SCALE_FACTOR = 2.0f; // how much the largeBitmap is bigger than the actual screen size
 
     private float mX, mY;
     private Paint paint;
     private Paint bitmapPaint = new Paint(Paint.DITHER_FLAG);
     private Paint textPaint = new Paint();
-    private Path path;
+    private Path currentDrawingPath;
     private Stroke currentStroke;
-    private Canvas canvas;
-    private Bitmap bitmap;
+    private Canvas largeCanvas;
+    private Bitmap largeBitmap;
 
     private DrawingUpdateListener drawingUpdateListener;
-
     private LinkedHashMap<Stroke, ArrayList<CPoint>> paths = new LinkedHashMap<>();
-
-    private DrawingInstrument currentInstrument = DrawingInstrument.PEN; //by default, the instrument is a pen (drawing)
+    private DrawingInstrument currentInstrument = DrawingInstrument.PEN;
     private int currentColor;
-
     private OnAddText onAddTextListener;
+
+    // --- Fields for scrolling ---
+    private float scrollX_custom = 0f;
+    private float scrollY_custom = 0f;
+    private int canvasWidth;
+    private int canvasHeight;
+
+    // --- Fields for multi-touch, panning, and zooming
+    private static final int INVALID_POINTER_ID = -1;
+    private int activePointerId = INVALID_POINTER_ID; // For 1-finger drawing/panning
+    private boolean isDrawing = false; // True if actively drawing with one finger
+
+    // For 2-finger manual pan (if ScaleGestureDetector doesn't handle all pan)
+    private boolean isTwoFingerPanning = false;
+    private int panPointerId1 = INVALID_POINTER_ID;
+    private int panPointerId2 = INVALID_POINTER_ID;
+    private float lastPanFocalX_screen, lastPanFocalY_screen;
+
+
+    // --- Fields for zooming ---
+    private final ScaleGestureDetector scaleGestureDetector;
+    private float currentScaleFactor = 1.0f;
+    private static final float MIN_SCALE_FACTOR = 0.25f; // Example: Can zoom out to 1/4th size
+    private static final float MAX_SCALE_FACTOR = 4.0f;  // Example: Can zoom in to 4x size
+
 
     public DrawView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -65,69 +90,132 @@ public class DrawView extends View {
         paint.setXfermode(null);
         paint.setAlpha(0xff);
 
-        DisplayMetrics defaultMetrics = new DisplayMetrics();
-        defaultMetrics.widthPixels = getResources().getDisplayMetrics().widthPixels;
-        defaultMetrics.heightPixels = getResources().getDisplayMetrics().heightPixels;
-
-        textPaint.setTextSize(70); //the size of the text that can be inserted on the board
+        textPaint.setTextSize(70);
         textPaint.setColor(Color.BLACK);
 
-        // Initialize with an empty paths list, replace with actual paths if available
-        init(defaultMetrics);
+        scaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
     }
 
-    public void init(DisplayMetrics metrics) {
-        int height = metrics.heightPixels;
-        int width = metrics.widthPixels;
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if (w > 0 && h > 0 && largeBitmap == null) {
+            if (canvasWidth == 0 || canvasHeight == 0) {
+                DisplayMetrics metrics = getResources().getDisplayMetrics();
+                initializeBitmap(metrics);
+            }
+            // Ensure scroll and scale are valid after size change
+            clampScroll();
+            invalidate();
+        }
+    }
 
-        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        canvas = new Canvas(bitmap);
+    private void initializeBitmap(DisplayMetrics metrics) {
+        canvasWidth = (int) (metrics.widthPixels * CANVAS_SCALE_FACTOR);
+        canvasHeight = (int) (metrics.heightPixels * CANVAS_SCALE_FACTOR);
+
+        if (canvasWidth <= 0) canvasWidth = metrics.widthPixels;
+        if (canvasHeight <= 0) canvasHeight = metrics.heightPixels;
+
+        if (largeBitmap != null) {
+            largeBitmap.recycle();
+        }
+        largeBitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888);
+        largeCanvas = new Canvas(largeBitmap);
+        largeCanvas.drawColor(DEFAULT_BG_COLOR);
 
         currentColor = COLOR_PEN;
+        // After initializing, ensure scroll is clamped, especially if scale factor isn't 1.
+        clampScroll();
+        invalidate();
     }
 
     public void init(OnAddText onAddTextListener, DisplayMetrics metrics, LiveData<LinkedHashMap<Stroke, ArrayList<CPoint>>> drawings, LifecycleOwner lifecycleOwner) {
         this.onAddTextListener = onAddTextListener;
-
-        int height = metrics.heightPixels;
-        int width = metrics.widthPixels;
-
-        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        canvas = new Canvas(bitmap);
-
-        currentColor = COLOR_PEN;
+        initializeBitmap(metrics);
 
         drawings.observe(lifecycleOwner, data -> {
-            if (data.isEmpty()){
-                return;
-            }
-            paths = data;
+            if (data == null) return;
+            paths.clear();
+            paths.putAll(data);
+            redrawLargeBitmapContent();
             invalidate();
         });
     }
 
+    private void redrawLargeBitmapContent() {
+        if (largeCanvas == null || largeBitmap == null) return;
+        largeCanvas.drawColor(DEFAULT_BG_COLOR);
+        paths.forEach((stroke, points) -> {
+            if (stroke.text != null && !points.isEmpty()) {
+                CPoint pos = points.get(0);
+                textPaint.setColor(stroke.color);
+                largeCanvas.drawText(stroke.text, pos.x(), pos.y(), textPaint);
+            } else {
+                Path pathForStroke = stroke.path;
+                if (pathForStroke == null && !points.isEmpty()) {
+                    pathForStroke = buildPathFromPoints(points);
+                    stroke.path = pathForStroke;
+                }
+                if (pathForStroke != null) {
+                    paint.setColor(stroke.color);
+                    paint.setStrokeWidth((stroke.color == Color.WHITE) ? ERASE_SIZE : stroke.strokeWidth);
+                    paint.setMaskFilter(null);
+                    largeCanvas.drawPath(pathForStroke, paint);
+                }
+            }
+        });
+    }
+
+    private void cancelCurrentDrawing() {
+        if (isDrawing && currentStroke != null) {
+            paths.remove(currentStroke); // Remove from our map of strokes
+            // Need to revert largeCanvas to state before this stroke was drawn
+            redrawLargeBitmapContent(); // Simplest way to revert
+        }
+        currentDrawingPath = null;
+        currentStroke = null;
+        isDrawing = false;
+    }
+
+
     public void setCurrentColor(int color) {
         this.currentColor = color;
+        if (currentInstrument == DrawingInstrument.TEXT) {
+            textPaint.setColor(color);
+        }
     }
 
     public void setCurrentInstrument(DrawingInstrument drawingInstrument) {
         this.currentInstrument = drawingInstrument;
-        if (drawingInstrument == DrawingInstrument.ERASE)
-            this.currentColor = Color.WHITE;
+        if (drawingInstrument == DrawingInstrument.TEXT) {
+            textPaint.setColor(this.currentColor);
+        }
     }
 
     public DrawingInstrument getCurrentInstrument() { return this.currentInstrument; }
 
-    public void addText(CPoint pos, String text) {
+    public void addText(CPoint screenPos, String text) {
+        if (largeCanvas == null) return;
+        // Convert screen position to canvas position considering scroll and scale
+        float canvasX = scrollX_custom + (screenPos.x() / currentScaleFactor);
+        float canvasY = scrollY_custom + (screenPos.y() / currentScaleFactor);
+        CPoint canvasPos = new CPoint(canvasX, canvasY);
+
         Stroke stroke = new Stroke(text, System.currentTimeMillis());
-        ArrayList<CPoint> point = new ArrayList<>();
-        point.add(pos);
-        paths.put(stroke, point);
+        stroke.color = this.currentColor;
+        ArrayList<CPoint> pointList = new ArrayList<>();
+        pointList.add(canvasPos);
+        paths.put(stroke, pointList);
+
+        textPaint.setColor(stroke.color);
+        largeCanvas.drawText(text, canvasPos.x(), canvasPos.y(), textPaint);
         invalidate();
 
         Executors.newSingleThreadExecutor().execute(() -> {
-            if (drawingUpdateListener==null) return;
-            drawingUpdateListener.addDrawing(new Pair<>(stroke, point));
+            if (drawingUpdateListener != null) {
+                drawingUpdateListener.addDrawing(new Pair<>(stroke, pointList));
+            }
         });
     }
 
@@ -135,121 +223,294 @@ public class DrawView extends View {
         this.drawingUpdateListener = drawingUpdateListener;
     }
 
-    private Path buildPath(ArrayList<CPoint> points){
-        Path path = new Path();
-        if (points.isEmpty()) return path;
-
-        float cX = points.get(0).x;
-        float cY = points.get(0).y;
-        path.moveTo(cX, cY);
-
-        for (int i=1; i<(points.size()); ++i){
-            float x = points.get(i).x;
-            float y = points.get(i).y;
-            path.lineTo(x, y);
+    private Path buildPathFromPoints(ArrayList<CPoint> points) {
+        Path newPath = new Path();
+        if (points.isEmpty()) return newPath;
+        CPoint firstPoint = points.get(0);
+        newPath.moveTo(firstPoint.x(), firstPoint.y());
+        for (int i = 1; i < points.size(); ++i) {
+            CPoint p = points.get(i);
+            newPath.lineTo(p.x(), p.y());
         }
-
-        return path;
+        return newPath;
     }
 
     @Override
-    protected void onDraw(@NonNull Canvas canvas) {
-        super.onDraw(canvas);
+    protected void onDraw(@NonNull Canvas viewCanvas) {
+        super.onDraw(viewCanvas);
+        if (largeBitmap == null || largeCanvas == null || getWidth() == 0 || getHeight() == 0) {
+            viewCanvas.drawColor(DEFAULT_BG_COLOR);
+            return;
+        }
 
-        canvas.save();
-        canvas.drawColor(DEFAULT_BG_COLOR);
+        viewCanvas.save();
 
-        paths.forEach((stroke, points) -> {
-            //determine what we should display: text or line (drawing)
-            if (stroke.text != null) {
-                CPoint pos = points.get(0);
-                canvas.drawText(stroke.text, pos.x, pos.y, textPaint);
-            } else {
-                if (stroke.path == null) {
-                    stroke.path = buildPath(points);
-                }
-                paint.setColor(stroke.color);
-                if (stroke.color == Color.WHITE){
-                    paint.setStrokeWidth(ERASE_SIZE);
-                } else {
-                    paint.setStrokeWidth(stroke.strokeWidth);
-                }
-                paint.setMaskFilter(null);
+        // Define the source rectangle from largeBitmap (what part to show)
+        float viewPortWidthOnCanvas = getWidth() / currentScaleFactor;
+        float viewPortHeightOnCanvas = getHeight() / currentScaleFactor;
 
-                canvas.drawPath(stroke.path, paint);
-            }
-        });
+        Rect srcRect = new Rect(
+                (int) scrollX_custom,
+                (int) scrollY_custom,
+                (int) (scrollX_custom + viewPortWidthOnCanvas),
+                (int) (scrollY_custom + viewPortHeightOnCanvas)
+        );
 
-        canvas.drawBitmap(bitmap, 0, 0, bitmapPaint);
-        canvas.restore();
+        // Define the destination rectangle on the view's canvas (entire view)
+        Rect destRect = new Rect(0, 0, getWidth(), getHeight());
+
+        viewCanvas.drawBitmap(largeBitmap, srcRect, destRect, bitmapPaint);
+        viewCanvas.restore();
     }
 
-    private void touchStart(float x, float y) {
-        path = new Path();
+    private void touchStart(float screenX, float screenY) {
+        // Convert screen to canvas coords
+        float canvasX = scrollX_custom + (screenX / currentScaleFactor);
+        float canvasY = scrollY_custom + (screenY / currentScaleFactor);
 
-        if (currentInstrument == DrawingInstrument.ERASE)
-            currentStroke = new Stroke(currentColor, ERASE_SIZE, path, System.currentTimeMillis());
-        else
-            currentStroke = new Stroke(currentColor, BRUSH_SIZE, path, System.currentTimeMillis());
-        paths.put(currentStroke, new ArrayList<>());
+        currentDrawingPath = new Path();
+        int strokeColor = (currentInstrument == DrawingInstrument.ERASE) ? Color.WHITE : currentColor;
+        int strokeWidth = (currentInstrument == DrawingInstrument.ERASE) ? ERASE_SIZE : BRUSH_SIZE;
+        currentStroke = new Stroke(strokeColor, strokeWidth, currentDrawingPath, System.currentTimeMillis());
 
-        path.reset();
-        path.moveTo(x, y);
-        mX = x;
-        mY = y;
+        paths.put(currentStroke, new ArrayList<>()); // Add to map
+        paths.get(currentStroke).add(new CPoint(canvasX, canvasY)); // Add first point
+
+        currentDrawingPath.moveTo(canvasX, canvasY);
+        mX = canvasX; // Store canvas coordinates
+        mY = canvasY;
+        isDrawing = true;
     }
 
-    private void touchMove(float x, float y) {
-        if (path == null) return;
-        float dx = Math.abs(x-mX);
-        float dy = Math.abs(y-mY);
+    private void touchMove(float screenX, float screenY) {
+        if (!isDrawing || currentDrawingPath == null || currentStroke == null) return;
 
-        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE){
-            path.quadTo(mX, mY, (x+mX)/2, (y+mY)/2);
-            mX = x;
-            mY = y;
+        float canvasX = scrollX_custom + (screenX / currentScaleFactor);
+        float canvasY = scrollY_custom + (screenY / currentScaleFactor);
 
-            paths.get(currentStroke).add(new CPoint(x, y));
+        float dx = Math.abs(canvasX - mX);
+        float dy = Math.abs(canvasY - mY);
+
+        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+            currentDrawingPath.quadTo(mX, mY, (canvasX + mX) / 2, (canvasY + mY) / 2);
+
+            // Draw the new segment onto largeCanvas
+            paint.setColor(currentStroke.color);
+            paint.setStrokeWidth((currentStroke.color == Color.WHITE) ? ERASE_SIZE : currentStroke.strokeWidth);
+            largeCanvas.drawPath(currentDrawingPath, paint); // This draws the entire path so far.
+            // For efficiency, could draw only new segments.
+
+            mX = canvasX;
+            mY = canvasY;
+            paths.get(currentStroke).add(new CPoint(canvasX, canvasY)); // Add point to stroke's list
+            invalidate(); // Request redraw of the view
         }
     }
 
     private void touchUp() {
-        if (path == null) return;
-        path.lineTo(mX, mY);
+        if (!isDrawing || currentDrawingPath == null || currentStroke == null) return;
+        // Path already drawn on largeCanvas during touchMove
+        // currentDrawingPath.lineTo(mX, mY); // Final point already added if quadTo was used
+        // largeCanvas.drawPath(currentDrawingPath, paint); // Final draw if needed
 
         Executors.newSingleThreadExecutor().execute(() -> {
-            if (drawingUpdateListener==null) return;
-            drawingUpdateListener.addDrawing(new Pair<>(currentStroke, paths.get(currentStroke)));
+            if (drawingUpdateListener != null && paths.containsKey(currentStroke)) {
+                drawingUpdateListener.addDrawing(new Pair<>(currentStroke, paths.get(currentStroke)));
+            }
         });
+        // Don't nullify currentDrawingPath/Stroke here, reset in ACTION_UP/CANCEL
+        isDrawing = false;
+    }
+
+    private void clampScroll() {
+        if (getWidth() == 0 || getHeight() == 0 || largeBitmap == null) return;
+
+        float effectiveViewportWidth = getWidth() / currentScaleFactor;
+        float effectiveViewportHeight = getHeight() / currentScaleFactor;
+
+        float maxScrollX = Math.max(0, canvasWidth - effectiveViewportWidth);
+        float maxScrollY = Math.max(0, canvasHeight - effectiveViewportHeight);
+
+        scrollX_custom = Math.max(0, Math.min(scrollX_custom, maxScrollX));
+        scrollY_custom = Math.max(0, Math.min(scrollY_custom, maxScrollY));
+
+        // If viewport is larger than canvas (zoomed out too much), center it
+        if (effectiveViewportWidth >= canvasWidth) {
+            scrollX_custom = (canvasWidth - effectiveViewportWidth) / 2f;
+        }
+        if (effectiveViewportHeight >= canvasHeight) {
+            scrollY_custom = (canvasHeight - effectiveViewportHeight) / 2f;
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
+        if (largeBitmap == null) return false;
 
-        switch (event.getAction()) {
+        // Let the ScaleGestureDetector inspect all events.
+        boolean consumedByScaler = scaleGestureDetector.onTouchEvent(event);
+
+        int action = event.getActionMasked();
+        int pointerIndex = event.getActionIndex();
+        int pointerId = event.getPointerId(pointerIndex);
+
+        // If scaling, don't process other touch events for drawing/manual panning
+        if (scaleGestureDetector.isInProgress()) {
+            isDrawing = false; // Ensure drawing is stopped
+            activePointerId = INVALID_POINTER_ID;
+            isTwoFingerPanning = false; // Scaler handles focal point adjustment
+            return true; // Event handled by scaler
+        }
+        // If consumedByScaler is true but not inProgress (e.g. onScaleEnd),
+        // still might need to handle ACTION_UP for pointers.
+
+        switch (action) {
             case MotionEvent.ACTION_DOWN:
-                //determine whether the user wants to add text or draw a picture
+                activePointerId = pointerId;
+                isDrawing = false; // Will be set true in touchStart if applicable
+                isTwoFingerPanning = false;
+
                 if (currentInstrument == DrawingInstrument.TEXT) {
-                    if (onAddTextListener == null) return false;
-                    onAddTextListener.invoke(new CPoint(x, y));
-                    return true;
+                    if (onAddTextListener != null) {
+                        onAddTextListener.invoke(new CPoint(event.getX(), event.getY()));
+                    }
+                } else {
+                    touchStart(event.getX(), event.getY());
                 }
-                touchStart(x, y);
                 invalidate();
+                break;
+
+            case MotionEvent.ACTION_POINTER_DOWN:
+                // Second finger down
+                if (isDrawing) { // If 1-finger drawing was in progress, cancel it
+                    cancelCurrentDrawing();
+                }
+                activePointerId = INVALID_POINTER_ID; // No single active drawing pointer
+                isTwoFingerPanning = true;
+                panPointerId1 = event.getPointerId(0);
+                panPointerId2 = event.getPointerId(1); // This is the new pointer
+                // Calculate initial focal point for manual panning
+                if (event.getPointerCount() >= 2) {
+                    float x0 = event.getX(event.findPointerIndex(panPointerId1));
+                    float y0 = event.getY(event.findPointerIndex(panPointerId1));
+                    float x1 = event.getX(event.findPointerIndex(panPointerId2));
+                    float y1 = event.getY(event.findPointerIndex(panPointerId2));
+                    lastPanFocalX_screen = (x0 + x1) / 2f;
+                    lastPanFocalY_screen = (y0 + y1) / 2f;
+                }
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                touchMove(x, y);
-                invalidate();
+                if (isDrawing && activePointerId != INVALID_POINTER_ID) {
+                    int currentActiveIdx = event.findPointerIndex(activePointerId);
+                    if (currentActiveIdx != -1) {
+                        touchMove(event.getX(currentActiveIdx), event.getY(currentActiveIdx));
+                    }
+                } else if (isTwoFingerPanning && event.getPointerCount() >= 2 && panPointerId1 != INVALID_POINTER_ID && panPointerId2 != INVALID_POINTER_ID) {
+                    int idx1 = event.findPointerIndex(panPointerId1);
+                    int idx2 = event.findPointerIndex(panPointerId2);
+                    if (idx1 != -1 && idx2 != -1) {
+                        float currentFocalX = (event.getX(idx1) + event.getX(idx2)) / 2f;
+                        float currentFocalY = (event.getY(idx1) + event.getY(idx2)) / 2f;
+
+                        float deltaX_screen = currentFocalX - lastPanFocalX_screen;
+                        float deltaY_screen = currentFocalY - lastPanFocalY_screen;
+
+                        // Convert screen pan delta to canvas pan delta (scaled)
+                        scrollX_custom -= deltaX_screen / currentScaleFactor;
+                        scrollY_custom -= deltaY_screen / currentScaleFactor;
+
+                        clampScroll();
+                        invalidate();
+
+                        lastPanFocalX_screen = currentFocalX;
+                        lastPanFocalY_screen = currentFocalY;
+                    }
+                }
+                break;
+
+            case MotionEvent.ACTION_POINTER_UP:
+                int upPointerId = event.getPointerId(pointerIndex);
+                if (isTwoFingerPanning && (upPointerId == panPointerId1 || upPointerId == panPointerId2)) {
+                    isTwoFingerPanning = false;
+                    // Transition to 1-finger mode if a finger remains
+                    if (upPointerId == panPointerId1) activePointerId = panPointerId2;
+                    else activePointerId = panPointerId1;
+
+                    // If transitioning to 1-finger draw, reset mX, mY based on remaining finger
+                    // For simplicity, we just stop panning. New 1-finger draw will start on next ACTION_DOWN/MOVE.
+                    int remainingPointerIndex = event.findPointerIndex(activePointerId);
+                    if(remainingPointerIndex != -1 && currentInstrument != DrawingInstrument.TEXT){
+                        // Optionally, immediately start drawing with the remaining finger
+                        // touchStart(event.getX(remainingPointerIndex), event.getY(remainingPointerIndex));
+                        isDrawing = false; // Require a new touch down or move to start drawing
+                    }
+
+                    panPointerId1 = INVALID_POINTER_ID;
+                    panPointerId2 = INVALID_POINTER_ID;
+
+                } else if (upPointerId == activePointerId) { // A non-primary drawing finger lifted (rare for 1-finger draw)
+                    if (isDrawing) touchUp();
+                    activePointerId = INVALID_POINTER_ID; // No active drawing pointer
+                }
                 break;
 
             case MotionEvent.ACTION_UP:
-                touchUp();
+            case MotionEvent.ACTION_CANCEL:
+                if (isDrawing && activePointerId == pointerId) {
+                    touchUp();
+                }
+                activePointerId = INVALID_POINTER_ID;
+                isDrawing = false;
+                isTwoFingerPanning = false;
+                panPointerId1 = INVALID_POINTER_ID;
+                panPointerId2 = INVALID_POINTER_ID;
+                // currentDrawingPath = null; // Already handled or will be on next touchStart
+                // currentStroke = null;
                 invalidate();
                 break;
         }
-        return true;
+        return true; // We are handling all touch events
+    }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        private float focusCanvasX_atScaleStart, focusCanvasY_atScaleStart;
+
+        @Override
+        public boolean onScaleBegin(ScaleGestureDetector detector) {
+            // Cancel any ongoing 1-finger drawing or manual 2-finger pan
+            if (isDrawing) {
+                cancelCurrentDrawing();
+            }
+            isDrawing = false;
+            isTwoFingerPanning = false;
+            activePointerId = INVALID_POINTER_ID;
+
+
+            float screenFocalX = detector.getFocusX();
+            float screenFocalY = detector.getFocusY();
+
+            // Point on the largeCanvas that is under the fingers
+            focusCanvasX_atScaleStart = scrollX_custom + (screenFocalX / currentScaleFactor);
+            focusCanvasY_atScaleStart = scrollY_custom + (screenFocalY / currentScaleFactor);
+            return true;
+        }
+
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            currentScaleFactor *= detector.getScaleFactor();
+            currentScaleFactor = Math.max(MIN_SCALE_FACTOR, Math.min(currentScaleFactor, MAX_SCALE_FACTOR));
+
+            // Adjust scroll to keep the original canvas focal point under the new screen focal point
+            float screenFocalX = detector.getFocusX();
+            float screenFocalY = detector.getFocusY();
+
+            scrollX_custom = focusCanvasX_atScaleStart - (screenFocalX / currentScaleFactor);
+            scrollY_custom = focusCanvasY_atScaleStart - (screenFocalY / currentScaleFactor);
+
+            clampScroll();
+            invalidate();
+            return true;
+        }
     }
 }
