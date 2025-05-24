@@ -23,6 +23,7 @@ import com.llc.drawit.R;
 import com.llc.drawit.databinding.ActivityRegisterBinding;
 import com.llc.drawit.domain.entities.User;
 import com.llc.drawit.domain.util.database.Result;
+import com.llc.drawit.presentation.util.NNull;
 import com.llc.drawit.presentation.util.loading.LoadingAlertDialog;
 import com.llc.drawit.presentation.viewModel.RegisterActivityViewModel;
 
@@ -76,9 +77,9 @@ public class RegisterActivity extends AppCompatActivity {
         binding.buttonRegister.setOnClickListener(v -> {
             String email = binding.editTextEmail.getText().toString().trim();
             String password = binding.editTextPassword.getText().toString().trim();
-            String tag = binding.editTextTag.getText().toString().trim();
+            String tag = NNull.str(binding.editTextTag.getText()).trim();
             String name = binding.editTextName.getText().toString().trim();
-            User user = new User(name, tag, email, password, "");
+            User user = User.builder().email(email).password(password).tag(tag).name(name).build();
 
             if (email.isEmpty() || password.isEmpty() || tag.isEmpty() || name.isEmpty()){
                 Toast.makeText(this, getString(R.string.t_please_fill_out_fields), Toast.LENGTH_SHORT).show();

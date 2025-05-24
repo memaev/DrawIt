@@ -23,7 +23,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 public class RegisterActivityViewModel extends ViewModel {
 
-    private MutableLiveData<User> _user = new MutableLiveData<>(new User());
+    private MutableLiveData<User> _user = new MutableLiveData<>(User.builder().build());
     public LiveData<User> user = _user;
 
     private MutableLiveData<Boolean> _loading = new MutableLiveData<>();

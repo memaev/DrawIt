@@ -57,4 +57,7 @@ dependencies {
     implementation(libs.swiperefreshlayout)
     implementation(libs.circleimageview)
     implementation(libs.loading.button)
+
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
 }

@@ -43,8 +43,7 @@ public class DrawView extends View {
     private Paint textPaint = new Paint();
     private Path currentDrawingPath;
     private Stroke currentStroke;
-    private Canvas largeCanvas;
-    private Bitmap largeBitmap;
+
 
     private DrawingUpdateListener drawingUpdateListener;
     private LinkedHashMap<Stroke, ArrayList<CPoint>> paths = new LinkedHashMap<>();
@@ -52,14 +51,16 @@ public class DrawView extends View {
     private int currentColor;
     private OnAddText onAddTextListener;
 
-    // --- Fields for scrolling ---
-    private float scrollX_custom = 0f;
-    private float scrollY_custom = 0f;
+    // Offset of the top left side of the view from top left side of largeBitmap
+    private float customXOffset = 0f;
+    private float customYOffset = 0f;
+
+    private Canvas largeCanvas;
+    private Bitmap largeBitmap;
     private int canvasWidth;
     private int canvasHeight;
 
-    // --- Fields for multi-touch, panning, and zooming
-    private static final int INVALID_POINTER_ID = -1;
+    private static final int INVALID_POINTER_ID = -1; // default const for unassigned pointer id
     private int activePointerId = INVALID_POINTER_ID; // For 1-finger drawing/panning
     private boolean isDrawing = false; // True if actively drawing with one finger
 
@@ -70,11 +71,10 @@ public class DrawView extends View {
     private float lastPanFocalX_screen, lastPanFocalY_screen;
 
 
-    // --- Fields for zooming ---
-    private final ScaleGestureDetector scaleGestureDetector;
-    private float currentScaleFactor = 1.0f;
-    private static final float MIN_SCALE_FACTOR = 0.25f; // Example: Can zoom out to 1/4th size
-    private static final float MAX_SCALE_FACTOR = 4.0f;  // Example: Can zoom in to 4x size
+    private final ScaleGestureDetector scaleGestureDetector; // for pinch-zoom gestures detection
+    private float currentScaleFactor = 1.0f; // current zoom
+    private static final float MIN_SCALE_FACTOR = 0.25f; // can zoom out to minimum 1/4th size
+    private static final float MAX_SCALE_FACTOR = 4.0f;  // can zoom in to maximum 4x size
 
 
     public DrawView(Context context, AttributeSet attrs) {
@@ -96,6 +96,19 @@ public class DrawView extends View {
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
     }
 
+    public void init(OnAddText onAddTextListener, DisplayMetrics metrics, LiveData<LinkedHashMap<Stroke, ArrayList<CPoint>>> drawings, LifecycleOwner lifecycleOwner) {
+        this.onAddTextListener = onAddTextListener;
+        initializeBitmap(metrics);
+
+        drawings.observe(lifecycleOwner, data -> {
+            if (data == null) return;
+            paths.clear();
+            paths.putAll(data);
+            redrawLargeBitmapContent();
+            invalidate();
+        });
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -114,9 +127,6 @@ public class DrawView extends View {
         canvasWidth = (int) (metrics.widthPixels * CANVAS_SCALE_FACTOR);
         canvasHeight = (int) (metrics.heightPixels * CANVAS_SCALE_FACTOR);
 
-        if (canvasWidth <= 0) canvasWidth = metrics.widthPixels;
-        if (canvasHeight <= 0) canvasHeight = metrics.heightPixels;
-
         if (largeBitmap != null) {
             largeBitmap.recycle();
         }
@@ -128,19 +138,6 @@ public class DrawView extends View {
         // After initializing, ensure scroll is clamped, especially if scale factor isn't 1.
         clampScroll();
         invalidate();
-    }
-
-    public void init(OnAddText onAddTextListener, DisplayMetrics metrics, LiveData<LinkedHashMap<Stroke, ArrayList<CPoint>>> drawings, LifecycleOwner lifecycleOwner) {
-        this.onAddTextListener = onAddTextListener;
-        initializeBitmap(metrics);
-
-        drawings.observe(lifecycleOwner, data -> {
-            if (data == null) return;
-            paths.clear();
-            paths.putAll(data);
-            redrawLargeBitmapContent();
-            invalidate();
-        });
     }
 
     private void redrawLargeBitmapContent() {
@@ -198,8 +195,8 @@ public class DrawView extends View {
     public void addText(CPoint screenPos, String text) {
         if (largeCanvas == null) return;
         // Convert screen position to canvas position considering scroll and scale
-        float canvasX = scrollX_custom + (screenPos.x() / currentScaleFactor);
-        float canvasY = scrollY_custom + (screenPos.y() / currentScaleFactor);
+        float canvasX = customXOffset + (screenPos.x() / currentScaleFactor);
+        float canvasY = customYOffset + (screenPos.y() / currentScaleFactor);
         CPoint canvasPos = new CPoint(canvasX, canvasY);
 
         Stroke stroke = new Stroke(text, System.currentTimeMillis());
@@ -250,10 +247,10 @@ public class DrawView extends View {
         float viewPortHeightOnCanvas = getHeight() / currentScaleFactor;
 
         Rect srcRect = new Rect(
-                (int) scrollX_custom,
-                (int) scrollY_custom,
-                (int) (scrollX_custom + viewPortWidthOnCanvas),
-                (int) (scrollY_custom + viewPortHeightOnCanvas)
+                (int) customXOffset,
+                (int) customYOffset,
+                (int) (customXOffset + viewPortWidthOnCanvas),
+                (int) (customYOffset + viewPortHeightOnCanvas)
         );
 
         // Define the destination rectangle on the view's canvas (entire view)
@@ -265,8 +262,8 @@ public class DrawView extends View {
 
     private void touchStart(float screenX, float screenY) {
         // Convert screen to canvas coords
-        float canvasX = scrollX_custom + (screenX / currentScaleFactor);
-        float canvasY = scrollY_custom + (screenY / currentScaleFactor);
+        float canvasX = customXOffset + (screenX / currentScaleFactor);
+        float canvasY = customYOffset + (screenY / currentScaleFactor);
 
         currentDrawingPath = new Path();
         int strokeColor = (currentInstrument == DrawingInstrument.ERASE) ? Color.WHITE : currentColor;
@@ -285,8 +282,8 @@ public class DrawView extends View {
     private void touchMove(float screenX, float screenY) {
         if (!isDrawing || currentDrawingPath == null || currentStroke == null) return;
 
-        float canvasX = scrollX_custom + (screenX / currentScaleFactor);
-        float canvasY = scrollY_custom + (screenY / currentScaleFactor);
+        float canvasX = customXOffset + (screenX / currentScaleFactor);
+        float canvasY = customYOffset + (screenY / currentScaleFactor);
 
         float dx = Math.abs(canvasX - mX);
         float dy = Math.abs(canvasY - mY);
@@ -331,15 +328,15 @@ public class DrawView extends View {
         float maxScrollX = Math.max(0, canvasWidth - effectiveViewportWidth);
         float maxScrollY = Math.max(0, canvasHeight - effectiveViewportHeight);
 
-        scrollX_custom = Math.max(0, Math.min(scrollX_custom, maxScrollX));
-        scrollY_custom = Math.max(0, Math.min(scrollY_custom, maxScrollY));
+        customXOffset = Math.max(0, Math.min(customXOffset, maxScrollX));
+        customYOffset = Math.max(0, Math.min(customYOffset, maxScrollY));
 
         // If viewport is larger than canvas (zoomed out too much), center it
         if (effectiveViewportWidth >= canvasWidth) {
-            scrollX_custom = (canvasWidth - effectiveViewportWidth) / 2f;
+            customXOffset = (canvasWidth - effectiveViewportWidth) / 2f;
         }
         if (effectiveViewportHeight >= canvasHeight) {
-            scrollY_custom = (canvasHeight - effectiveViewportHeight) / 2f;
+            customYOffset = (canvasHeight - effectiveViewportHeight) / 2f;
         }
     }
 
@@ -348,7 +345,7 @@ public class DrawView extends View {
         if (largeBitmap == null) return false;
 
         // Let the ScaleGestureDetector inspect all events.
-        boolean consumedByScaler = scaleGestureDetector.onTouchEvent(event);
+        scaleGestureDetector.onTouchEvent(event);
 
         int action = event.getActionMasked();
         int pointerIndex = event.getActionIndex();
@@ -417,8 +414,8 @@ public class DrawView extends View {
                         float deltaY_screen = currentFocalY - lastPanFocalY_screen;
 
                         // Convert screen pan delta to canvas pan delta (scaled)
-                        scrollX_custom -= deltaX_screen / currentScaleFactor;
-                        scrollY_custom -= deltaY_screen / currentScaleFactor;
+                        customXOffset -= deltaX_screen / currentScaleFactor;
+                        customYOffset -= deltaY_screen / currentScaleFactor;
 
                         clampScroll();
                         invalidate();
@@ -491,8 +488,8 @@ public class DrawView extends View {
             float screenFocalY = detector.getFocusY();
 
             // Point on the largeCanvas that is under the fingers
-            focusCanvasX_atScaleStart = scrollX_custom + (screenFocalX / currentScaleFactor);
-            focusCanvasY_atScaleStart = scrollY_custom + (screenFocalY / currentScaleFactor);
+            focusCanvasX_atScaleStart = customXOffset + (screenFocalX / currentScaleFactor);
+            focusCanvasY_atScaleStart = customYOffset + (screenFocalY / currentScaleFactor);
             return true;
         }
 
@@ -505,8 +502,8 @@ public class DrawView extends View {
             float screenFocalX = detector.getFocusX();
             float screenFocalY = detector.getFocusY();
 
-            scrollX_custom = focusCanvasX_atScaleStart - (screenFocalX / currentScaleFactor);
-            scrollY_custom = focusCanvasY_atScaleStart - (screenFocalY / currentScaleFactor);
+            customXOffset = focusCanvasX_atScaleStart - (screenFocalX / currentScaleFactor);
+            customYOffset = focusCanvasY_atScaleStart - (screenFocalY / currentScaleFactor);
 
             clampScroll();
             invalidate();

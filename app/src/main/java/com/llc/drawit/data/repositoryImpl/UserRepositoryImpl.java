@@ -128,7 +128,13 @@ public class UserRepositoryImpl implements UserRepository{
                 String password = NNull.str(snapshot.child(Constants.PASSWORD).getValue());
                 String profileImageUrl = NNull.str(snapshot.child(Constants.PROFILE_IMAGE_URL).getValue());
 
-                User user = new User(name, tag, email, password, profileImageUrl);
+                User user = User.builder()
+                        .name(name)
+                        .tag(tag)
+                        .email(email)
+                        .password(password)
+                        .profileImageUrl(profileImageUrl)
+                        .build();
                 manager.onResult(new LoadData<>(Result.SUCCESS, user));
             }
 
@@ -156,7 +162,13 @@ public class UserRepositoryImpl implements UserRepository{
                     String email = NNull.str(snapshot.child(Constants.EMAIL).getValue());
                     String profileImageUrl = NNull.str(snapshot.child(Constants.PROFILE_IMAGE_URL).getValue());
 
-                    User user = new User(snapshot.getKey(), name, tag, email, profileImageUrl);
+                    User user = User.builder()
+                            .uid(snapshot.getKey())
+                            .name(name)
+                            .tag(tag)
+                            .email(email)
+                            .profileImageUrl(profileImageUrl)
+                            .build();
                     users.add(user);
                 }
 
