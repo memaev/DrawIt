@@ -1,9 +1,5 @@
 package com.llc.drawit.presentation.activity;
 
-import static com.llc.drawit.domain.util.state.LoginBtnState.LOGIN;
-import static com.llc.drawit.domain.util.state.LoginBtnState.SEND_CODE;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -13,22 +9,9 @@ import android.widget.Toast;
 
 import com.llc.drawit.R;
 import com.llc.drawit.databinding.ActivityLoginBinding;
-import com.llc.drawit.domain.util.Constants;
 import com.llc.drawit.domain.util.callbacks.LoginStateListener;
-import com.llc.drawit.presentation.util.loading.LoadingAlertDialog;
 import com.llc.drawit.presentation.viewModel.LoginActivityViewModel;
-import com.google.firebase.FirebaseException;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.PhoneAuthCredential;
-import com.google.firebase.auth.PhoneAuthOptions;
-import com.google.firebase.auth.PhoneAuthProvider;
 
-import java.util.concurrent.TimeUnit;
-
-import dagger.hilt.android.AndroidEntryPoint;
-import maevskii.studio.loading_button.LoadingButton;
-
-@AndroidEntryPoint
 public class LoginActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;

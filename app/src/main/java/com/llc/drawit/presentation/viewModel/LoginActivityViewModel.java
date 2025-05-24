@@ -18,20 +18,10 @@ import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
-@HiltViewModel
 public class LoginActivityViewModel extends ViewModel {
-
-    public MutableLiveData<LoginBtnState> loginBtnState = new MutableLiveData<>(LoginBtnState.SEND_CODE);
-
-    private UserRepository userRepository;
 
     private MutableLiveData<Boolean> _loading = new MutableLiveData<>(false);
     public LiveData<Boolean> loading = _loading;
-
-    @Inject
-    public LoginActivityViewModel(UserRepository userRepository){
-        this.userRepository = userRepository;
-    }
 
     public void login(Context context, String email, String password, LoginStateListener listener) {
         _loading.postValue(true);
