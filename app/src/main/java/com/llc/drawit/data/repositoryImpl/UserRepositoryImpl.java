@@ -154,9 +154,9 @@ public class UserRepositoryImpl implements UserRepository{
                     String name = NNull.str(snapshot.child(Constants.NAME).getValue());
                     String tag = NNull.str(snapshot.child(Constants.TAG).getValue());
                     String email = NNull.str(snapshot.child(Constants.EMAIL).getValue());
-                    String password = NNull.str(snapshot.child(Constants.PROFILE_IMAGE_URL).getValue());
+                    String profileImageUrl = NNull.str(snapshot.child(Constants.PROFILE_IMAGE_URL).getValue());
 
-                    User user = new User(snapshot.getKey(), name, tag, email, password);
+                    User user = new User(snapshot.getKey(), name, tag, email, profileImageUrl);
                     users.add(user);
                 }
 

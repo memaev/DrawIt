@@ -24,12 +24,11 @@ public class User {
         this.whiteboards = whiteboards;
     }
 
-    public User(String uid, String name, String tag, String email, String password, String profileImageUrl) {
+    public User(String uid, String name, String tag, String email, String profileImageUrl) {
         this.uid = uid;
         this.name = name;
         this.tag = tag;
         this.email = email;
-        this.password = password;
         this.profileImageUrl = profileImageUrl;
         this.whiteboards = "";
     }
@@ -43,21 +42,11 @@ public class User {
         this.whiteboards = "";
     }
 
-    public User(String name, String tag, String email, String password, String profileImageUrl){
-        this.name = name;
-        this.tag = tag;
-        this.email = email;
-        this.password = password;
-        this.profileImageUrl = profileImageUrl;
-        this.whiteboards = "";
-    }
-
     public HashMap<String, String> getAsHashMap(){
         HashMap<String, String> user = new HashMap<>();
         user.put(Constants.NAME, NNull.str(name));
         user.put(Constants.TAG, NNull.str(tag));
         user.put(Constants.EMAIL, NNull.str(email));
-        user.put(Constants.PASSWORD, NNull.str(password));
         user.put(Constants.PROFILE_IMAGE_URL, (profileImageUrl==null?"":profileImageUrl));
         user.put(Constants.WHITEBOARDS, (whiteboards==null?"":whiteboards));
         return user;
