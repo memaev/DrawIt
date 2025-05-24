@@ -31,4 +31,6 @@
     <string name="t_profile_image_uploading_failure">Failed to upload profile image</string>
     <string name="t_no_gallery_permission">There is no gallery permission</string>
     <string name="t_user_id_not_found">User id not found></string>
+
+    <string name="my_whiteboards">My whiteboards</string>
 </resources>

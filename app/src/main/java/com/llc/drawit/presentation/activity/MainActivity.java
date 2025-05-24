@@ -56,9 +56,9 @@ public class MainActivity extends AppCompatActivity {
             if (!user.getProfileImageUrl().isEmpty())
                 Glide.with(getBaseContext()).load(user.getProfileImageUrl()).into(binding.imageProfileUser);
 
-            binding.textviewUserName.setText(user.getName());
-            binding.textviewTag.setText("@" + user.getTag());
-            binding.tvPhoneNumber.setText(user.getEmail());
+            binding.tvUsername.setText(user.getName());
+            binding.tvUsertag.setText("@" + user.getTag());
+            binding.tvEmail.setText(user.getEmail());
         });
     }
 
