@@ -74,6 +74,30 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
     }
 
     @Override
+    public void loadWhiteboards(List<String> whiteboardsIds, LoadManager<List<Whiteboard>> manager) {
+        List<Whiteboard> whiteboards = new ArrayList<>();
+        HFirebase.DB.child(Constants.WHITEBOARDS).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot whiteboardSnapshot : snapshot.getChildren()) {
+                    String id = whiteboardSnapshot.getKey();
+                    String name = Objects.requireNonNull(whiteboardSnapshot.child(Constants.NAME).getValue()).toString();
+                    String members = Objects.requireNonNull(whiteboardSnapshot.child(Constants.MEMBERS).getValue()).toString();
+
+                    Whiteboard whiteboard = new Whiteboard(id, name, members);
+                    whiteboards.add(whiteboard);
+                }
+                manager.onResult(new LoadData<>(Result.SUCCESS, whiteboards));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                manager.onResult(new LoadData<>(Result.FAILURE, null));
+            }
+        });
+    }
+
+    @Override
     public void loadMembers(String members, LoadManager<List<User>> manager) {
         if (members==null){
             manager.onResult(new LoadData<>(Result.FAILURE, null));

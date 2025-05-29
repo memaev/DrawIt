@@ -16,6 +16,7 @@ import java.util.List;
 
 public interface WhiteboardRepository {
     void loadWhiteboard(String whiteboardId, LoadManager<Whiteboard> manager);
+    void loadWhiteboards(List<String> whiteboardsIds, LoadManager<List<Whiteboard>> manager);
     void loadMembers(String members, LoadManager<List<User>> manager);
     void loadDrawings(String whiteboardId, MutableLiveData<LinkedHashMap<Stroke, ArrayList<CPoint>>> drawings, LoadManager<LinkedHashMap<Stroke, ArrayList<CPoint>>> manager);
     void stopDrawingsListener(String whiteboardId);

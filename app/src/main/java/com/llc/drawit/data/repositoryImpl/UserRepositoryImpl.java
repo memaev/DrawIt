@@ -20,6 +20,7 @@ import com.llc.drawit.presentation.util.NNull;
 import com.llc.drawit.presentation.util.loading.LoadingAlertDialog;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -85,28 +86,17 @@ public class UserRepositoryImpl implements UserRepository{
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()){
                         // ids of all user's whiteboards are saved in the string and divided by ','
-                        //id-шники досок пользователя хранятся в виде строки через запятую
                         String whiteboardsStr = (task.getResult().getValue()!=null ? task.getResult().getValue() : "").toString();
                         if (whiteboardsStr.isEmpty()){
                             // if user doesn't have any whiteboards
                             manager.onResult(new LoadData<>(Result.SUCCESS, new ArrayList<>()));
                             return;
                         }
-                        String[] whiteboards = whiteboardsStr.split(",");
-                        List<Whiteboard> whiteboardList = new ArrayList<>();
-
-                        for (int i=0; i<whiteboards.length; ++i){
-                            int finalI = i;
-                            // loading every whiteboard by it's id
-                            whiteboardRepository.get().loadWhiteboard(whiteboards[i], data -> {
-                                if (data.getResultCode() == Result.SUCCESS)
-                                    whiteboardList.add(data.getData());
-
-                                if (finalI == (whiteboards.length-1))
-                                    manager.onResult(new LoadData<>(Result.SUCCESS, whiteboardList));
-                            });
-                        }
-
+                        List<String> whiteboardsIds = Arrays.asList(whiteboardsStr.split(","));
+                        whiteboardRepository.get().loadWhiteboards(whiteboardsIds, data -> {
+                            if (data.getResultCode() == Result.SUCCESS)
+                                manager.onResult(new LoadData<>(Result.SUCCESS, data.getData()));
+                        });
                     }else{
                         manager.onResult(new LoadData<>(Result.FAILURE, null));
                     }
