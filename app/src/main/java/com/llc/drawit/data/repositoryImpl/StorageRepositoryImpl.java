@@ -15,7 +15,7 @@ public class StorageRepositoryImpl implements StorageRepository {
             manager.onResult(new LoadData<>(Result.FAILURE, "Не удалось загрузить картинку"));
             return;
         }
-        //загружаем фотографию профиля в Firebase Storage, если все успешно, то получаем ссылку на скачивание и вызываем callback
+
         // uploading the image to Firebase Storage, if the upload is successful, getting the link to download this image and calling the finish callback
         HFirebase.STORAGE.child(uid).putFile(path).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {

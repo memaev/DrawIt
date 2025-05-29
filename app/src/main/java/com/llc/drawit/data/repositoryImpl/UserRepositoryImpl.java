@@ -84,10 +84,11 @@ public class UserRepositoryImpl implements UserRepository{
         HFirebase.DB.child(Constants.USERS).child(uid).child(Constants.WHITEBOARDS).get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()){
+                        // ids of all user's whiteboards are saved in the string and divided by ','
                         //id-шники досок пользователя хранятся в виде строки через запятую
                         String whiteboardsStr = (task.getResult().getValue()!=null ? task.getResult().getValue() : "").toString();
                         if (whiteboardsStr.isEmpty()){
-                            //если у пользователя нет досок
+                            // if user doesn't have any whiteboards
                             manager.onResult(new LoadData<>(Result.SUCCESS, new ArrayList<>()));
                             return;
                         }
@@ -96,7 +97,7 @@ public class UserRepositoryImpl implements UserRepository{
 
                         for (int i=0; i<whiteboards.length; ++i){
                             int finalI = i;
-                            //загружаем каждую доску
+                            // loading every whiteboard by it's id
                             whiteboardRepository.get().loadWhiteboard(whiteboards[i], data -> {
                                 if (data.getResultCode() == Result.SUCCESS)
                                     whiteboardList.add(data.getData());
