@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.llc.drawit.presentation.util.NNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -38,8 +40,8 @@ import dagger.Lazy;
 public class WhiteboardRepositoryImpl implements WhiteboardRepository {
 
     private ValueEventListener valueEventListener; // listener on changes in realtime database
-    private Lazy<UserRepository> userRepository; // repository for user management in the database
-    private HashMap<String, String> loadedPaths = new HashMap<>(); //save ids of already loaded drawings so we won't need to load them again
+    private final Lazy<UserRepository> userRepository; // repository for user management in the database
+    private final HashMap<String, String> loadedPaths = new HashMap<>(); //save ids of already loaded drawings so we won't need to load them again
 
     @Inject // dependency injection of UserRepository
     public WhiteboardRepositoryImpl(Lazy<UserRepository> userRepository) {
@@ -62,7 +64,11 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
                         String id = snapshot.getKey();
                         String members = Objects.requireNonNull(snapshot.child(Constants.MEMBERS).getValue()).toString();
 
-                        Whiteboard whiteboard = new Whiteboard(id, name, members);
+                        Whiteboard whiteboard = Whiteboard.builder()
+                                .id(id)
+                                .name(name)
+                                .members(members)
+                                .build();
                         manager.onResult(new LoadData<>(Result.SUCCESS, whiteboard));
                     }
 
@@ -162,7 +168,7 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
                 manager.onResult(new LoadData<>(Result.FAILURE, null));
                 return;
             }
-            String members = res.getData().getMembers();
+            String members = res.getData().members();
             if (Arrays.asList(members.split(",")).contains(userId)) {
                 manager.onResult(new LoadData<>(Result.FAILURE, null));
                 return;
@@ -203,14 +209,16 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
                         continue;
 
                     //get all the points of this drawing in a string to speed up loading and updating
-                    String colorStr = ((drawingSnapshot.child(Constants.COLOR)).getValue() == null) ? "red" : (drawingSnapshot.child(Constants.COLOR)).getValue().toString();
+                    String colorStr = Optional.ofNullable(drawingSnapshot.child(Constants.COLOR).getValue()).map(String::valueOf).orElse("red");
                     int color = ColorMapper.stringToColor(colorStr);
 
-                    String text = ((drawingSnapshot.child(Constants.TEXT).getValue() == null) ? "" : (drawingSnapshot.child(Constants.TEXT).getValue())).toString();
-                    long timestamp = Long.parseLong(((drawingSnapshot.child(Constants.TIMESTAMP).getValue() == null) ? "0" : (drawingSnapshot.child(Constants.TIMESTAMP).getValue())).toString());
+                    String text = Optional.ofNullable(drawingSnapshot.child(Constants.TEXT).getValue()).map(String::valueOf).orElse("");
+                    long timestamp = Long.parseLong(Optional.ofNullable(drawingSnapshot.child(Constants.TIMESTAMP).getValue()).map(String::valueOf).orElse("0"));
+
+
 
                     //get all the points of this drawing in a string to speed up loading and updating
-                    String drawingPath = ((drawingSnapshot.child(Constants.POINTS).getValue() == null) ? "" : (drawingSnapshot.child(Constants.POINTS).getValue())).toString();
+                    String drawingPath = Optional.ofNullable(drawingSnapshot.child(Constants.POINTS).getValue()).map(String::valueOf).orElse("");
                     loadDrawing(drawingPath, text, color, timestamp, drawing -> {
                         if (drawing == null) return;
                         drawings.put(drawing.getData().first, drawing.getData().second);
@@ -221,8 +229,7 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
                 if (currentDrawings != null) {
                     drawings.putAll(currentDrawings);
                 }
-                currentDrawings = drawings;
-                currentDrawings = sortHashmap(currentDrawings);
+                currentDrawings = sortHashmap(drawings);
                 drawingsLd.postValue(currentDrawings);
             }
 
@@ -273,10 +280,10 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
 
     /**
      * Function to convert drawing into map struct to be save in the database
-     * @param drawing
-     * @return
+     * @param drawing the full drawing
+     * @return HashMap of string-string
      */
-    private static HashMap<String, String> getStringStringHashMap(Pair<Stroke, ArrayList<CPoint>> drawing) {
+    private HashMap<String, String> getStringStringHashMap(Pair<Stroke, ArrayList<CPoint>> drawing) {
         StringBuilder path = new StringBuilder();
         for (int i = 0; i< drawing.second.size(); ++i) {
             CPoint point = drawing.second.get(i);
