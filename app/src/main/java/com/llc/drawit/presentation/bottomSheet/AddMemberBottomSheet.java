@@ -15,7 +15,7 @@ import com.llc.drawit.databinding.AddMembersBsLayoutBinding;
 import com.llc.drawit.domain.entities.User;
 import com.llc.drawit.domain.util.callbacks.MembersListener;
 import com.llc.drawit.domain.util.database.Result;
-import com.llc.drawit.presentation.recyclerView.FullMemberAdapter;
+import com.llc.drawit.presentation.recyclerView.FullMembersListAdapter;
 import com.llc.drawit.presentation.viewModel.AddMemberViewModel;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -26,12 +26,12 @@ public class AddMemberBottomSheet extends BottomSheetDialogFragment implements M
 
     private AddMembersBsLayoutBinding binding;
     private AddMemberViewModel viewModel;
-    private FullMemberAdapter adapter;
+    private FullMembersListAdapter adapter;
 
     // listener for managing members that was provided from activity
-    private MembersListener onMemberSelectedFromActivity;
+    private final MembersListener onMemberSelectedFromActivity;
 
-    private String whiteboardId;
+    private final String whiteboardId;
 
     public AddMemberBottomSheet(MembersListener onMemberSelectedFromActivity, String whiteboardId) {
         this.onMemberSelectedFromActivity = onMemberSelectedFromActivity;
@@ -56,7 +56,7 @@ public class AddMemberBottomSheet extends BottomSheetDialogFragment implements M
 
             //set adapter for the list of all users
             binding.rvMembersFull.setLayoutManager(new LinearLayoutManager(requireContext()));
-            adapter = new FullMemberAdapter(res.getData(), this);
+            adapter = new FullMembersListAdapter(res.getData(), this);
             binding.rvMembersFull.setAdapter(adapter);
         });
 
