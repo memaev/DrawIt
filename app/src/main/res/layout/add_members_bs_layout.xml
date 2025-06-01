@@ -23,7 +23,7 @@
         android:layout_marginHorizontal="30dp"
         android:layout_marginTop="25dp"
         android:background="@drawable/edit_text_background_shape"
-        android:queryHint="Имя участника.."
+        android:queryHint="@string/search_by_user_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/add_member" />

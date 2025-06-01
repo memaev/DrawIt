@@ -34,4 +34,6 @@
     <string name="t_user_id_not_found">Не найден id пользователя</string>
 
     <string name="my_whiteboards">Мои доски</string>
+
+    <string name="search_by_user_name">Поиск по имени пользователя</string>
 </resources>

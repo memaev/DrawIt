@@ -33,4 +33,6 @@
     <string name="t_user_id_not_found">User id not found></string>
 
     <string name="my_whiteboards">My whiteboards</string>
+
+    <string name="search_by_user_name">Search by user name</string>
 </resources>
