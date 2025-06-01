@@ -38,7 +38,7 @@ public class RegisterActivity extends AppCompatActivity {
     private RegisterActivityViewModel viewModel;
 
     // ActivityResultLauncher for picking an image and uploading to the server
-    ActivityResultLauncher<Intent> pickImageActivityResultLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> pickImageActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData()!=null && result.getData().getData()!=null){
@@ -49,7 +49,7 @@ public class RegisterActivity extends AppCompatActivity {
     );
 
     //to obtain permission to access the gallery
-    ActivityResultLauncher<String> requestPermissionLauncher= registerForActivityResult(
+    private final ActivityResultLauncher<String> requestPermissionLauncher= registerForActivityResult(
             new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted){
                     Intent intent = new Intent();
@@ -69,7 +69,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         viewModel = new ViewModelProvider(this).get(RegisterActivityViewModel.class);
 
-        setStateObservers();
+        startStateObservers();
 
         binding.imagePerson.setOnClickListener(v -> launchImagePicker());
         binding.llAddProfilePhoto.setOnClickListener(v -> launchImagePicker());
@@ -114,7 +114,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    private void setStateObservers() {
+    private void startStateObservers() {
         viewModel.pickedUserProfileImage.observe(this, uri -> {
             if (uri == null) {
                 binding.llAddProfilePhoto.setVisibility(View.VISIBLE);
