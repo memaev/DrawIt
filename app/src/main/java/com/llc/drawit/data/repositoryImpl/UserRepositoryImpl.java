@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -86,7 +87,7 @@ public class UserRepositoryImpl implements UserRepository{
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()){
                         // ids of all user's whiteboards are saved in the string and divided by ','
-                        String whiteboardsStr = (task.getResult().getValue()!=null ? task.getResult().getValue() : "").toString();
+                        String whiteboardsStr = Optional.ofNullable(task.getResult().getValue()).map(String::valueOf).orElse("");
                         if (whiteboardsStr.isEmpty()){
                             // if user doesn't have any whiteboards
                             manager.onResult(new LoadData<>(Result.SUCCESS, new ArrayList<>()));
@@ -113,11 +114,11 @@ public class UserRepositoryImpl implements UserRepository{
         HFirebase.DB.child(Constants.USERS).child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String name = NNull.str(snapshot.child(Constants.NAME).getValue());
-                String tag = NNull.str(snapshot.child(Constants.TAG).getValue());
-                String email = NNull.str(snapshot.child(Constants.EMAIL).getValue());
-                String password = NNull.str(snapshot.child(Constants.PASSWORD).getValue());
-                String profileImageUrl = NNull.str(snapshot.child(Constants.PROFILE_IMAGE_URL).getValue());
+                String name = Optional.ofNullable(snapshot.child(Constants.NAME).getValue()).map(String::valueOf).orElse("");
+                String tag = Optional.ofNullable(snapshot.child(Constants.TAG).getValue()).map(String::valueOf).orElse("");
+                String email = Optional.ofNullable(snapshot.child(Constants.EMAIL).getValue()).map(String::valueOf).orElse("");
+                String password = Optional.ofNullable(snapshot.child(Constants.PASSWORD).getValue()).map(String::valueOf).orElse("");
+                String profileImageUrl = Optional.ofNullable(snapshot.child(Constants.PROFILE_IMAGE_URL).getValue()).map(String::valueOf).orElse("");
 
                 User user = User.builder()
                         .name(name)
@@ -148,10 +149,10 @@ public class UserRepositoryImpl implements UserRepository{
                     if (Objects.equals(snapshot.getKey(), FirebaseAuth.getInstance().getCurrentUser().getUid()))
                         continue;
 
-                    String name = NNull.str(snapshot.child(Constants.NAME).getValue());
-                    String tag = NNull.str(snapshot.child(Constants.TAG).getValue());
-                    String email = NNull.str(snapshot.child(Constants.EMAIL).getValue());
-                    String profileImageUrl = NNull.str(snapshot.child(Constants.PROFILE_IMAGE_URL).getValue());
+                    String name = Optional.ofNullable(snapshot.child(Constants.NAME).getValue()).map(String::valueOf).orElse("");
+                    String tag = Optional.ofNullable(snapshot.child(Constants.TAG).getValue()).map(String::valueOf).orElse("");
+                    String email = Optional.ofNullable(snapshot.child(Constants.EMAIL).getValue()).map(String::valueOf).orElse("");
+                    String profileImageUrl = Optional.ofNullable(snapshot.child(Constants.PROFILE_IMAGE_URL).getValue()).map(String::valueOf).orElse("");
 
                     User user = User.builder()
                             .uid(snapshot.getKey())
@@ -182,7 +183,7 @@ public class UserRepositoryImpl implements UserRepository{
                         manager.onResult(new LoadData<>(Result.FAILURE, null));
                         return;
                     }
-                    String whiteboardsIds = ((task.getResult().getValue()==null)?"":(task.getResult().getValue())).toString();
+                    String whiteboardsIds = Optional.ofNullable(task.getResult().getValue()).map(String::valueOf).orElse("");
                     //adding whiteboard id to user's whiteboards
                     if (whiteboardsIds.isEmpty()) whiteboardsIds = whiteboardId;
                     else whiteboardsIds += "," + whiteboardId;
