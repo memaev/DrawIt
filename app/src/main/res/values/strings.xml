@@ -35,4 +35,10 @@
     <string name="my_whiteboards">My whiteboards</string>
 
     <string name="search_by_user_name">Search by user name</string>
+
+    <string name="color_picked">Picked color %1$s</string>
+    <string name="black">Black</string>
+    <string name="blue">Blue</string>
+    <string name="green">Green</string>
+    <string name="red">Red</string>
 </resources>

@@ -2,6 +2,7 @@ package com.llc.drawit.domain.util.drawing;
 
 import android.graphics.Color;
 
+import com.llc.drawit.R;
 import com.llc.drawit.domain.util.Constants;
 
 /**
@@ -9,58 +10,30 @@ import com.llc.drawit.domain.util.Constants;
  */
 public class ColorMapper {
     public static int stringToColor(String color) {
-        switch (color) {
-            case Constants.BLACK: {
-                return Color.BLACK;
-            }
-            case Constants.BLUE: {
-                return Color.BLUE;
-            }
-            case Constants.GREEN: {
-                return Color.GREEN;
-            }
-            case Constants.WHITE: {
-                return Color.WHITE;
-            }
-            default: {
-                return Color.RED;
-            }
-        }
+        return switch (color) {
+            case Constants.BLACK -> Color.BLACK;
+            case Constants.BLUE -> Color.BLUE;
+            case Constants.GREEN -> Color.GREEN;
+            case Constants.WHITE -> Color.WHITE;
+            default -> Color.RED;
+        };
     }
     public static String colorToString(int color) {
-        switch (color) {
-            case Color.BLACK: {
-                return Constants.BLACK;
-            }
-            case Color.BLUE: {
-                return Constants.BLUE;
-            }
-            case Color.GREEN: {
-                return Constants.GREEN;
-            }
-            case Color.WHITE: {
-                return Constants.WHITE;
-            }
-            default: {
-                return Constants.RED;
-            }
-        }
+        return switch (color) {
+            case Color.BLACK -> Constants.BLACK;
+            case Color.BLUE -> Constants.BLUE;
+            case Color.GREEN -> Constants.GREEN;
+            case Color.WHITE -> Constants.WHITE;
+            default -> Constants.RED;
+        };
     }
 
-    public static String colorToStringRus(int color) {
-        switch (color) {
-            case Color.BLACK: {
-                return Constants.BLACK_RUS;
-            }
-            case Color.BLUE: {
-                return Constants.BLUE_RUS;
-            }
-            case Color.GREEN: {
-                return Constants.GREEN_RUS;
-            }
-            default: {
-                return Constants.RED_RUS;
-            }
-        }
+    public static int colorToStringResourceId(int color) {
+        return switch (color) {
+            case Color.BLACK -> R.string.black;
+            case Color.BLUE -> R.string.blue;
+            case Color.GREEN -> R.string.green;
+            default -> R.string.red;
+        };
     }
 }
