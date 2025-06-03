@@ -2,7 +2,7 @@ package com.llc.drawit.domain.repository;
 
 import com.llc.drawit.domain.entities.User;
 import com.llc.drawit.domain.entities.Whiteboard;
-import com.llc.drawit.domain.util.database.LoadManager;
+import com.llc.drawit.domain.util.callbacks.LoadManager;
 
 import java.util.List;
 

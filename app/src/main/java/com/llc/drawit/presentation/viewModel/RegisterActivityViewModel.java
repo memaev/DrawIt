@@ -11,7 +11,7 @@ import com.llc.drawit.domain.repository.StorageRepository;
 import com.llc.drawit.domain.repository.UserRepository;
 import com.llc.drawit.domain.util.database.HFirebase;
 import com.llc.drawit.domain.util.database.LoadData;
-import com.llc.drawit.domain.util.database.LoadManager;
+import com.llc.drawit.domain.util.callbacks.LoadManager;
 import com.llc.drawit.domain.util.database.Result;
 
 import java.util.Objects;

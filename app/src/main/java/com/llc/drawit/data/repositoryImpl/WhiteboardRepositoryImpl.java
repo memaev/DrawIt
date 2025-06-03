@@ -14,14 +14,13 @@ import com.llc.drawit.domain.util.drawing.ColorMapper;
 import com.llc.drawit.domain.util.Constants;
 import com.llc.drawit.domain.util.database.HFirebase;
 import com.llc.drawit.domain.util.database.LoadData;
-import com.llc.drawit.domain.util.database.LoadManager;
+import com.llc.drawit.domain.util.callbacks.LoadManager;
 import com.llc.drawit.domain.util.database.Result;
 import com.llc.drawit.domain.util.drawing.Stroke;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
-import com.llc.drawit.presentation.util.NNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.llc.drawit.domain.entities.User;
 import com.llc.drawit.domain.entities.Whiteboard;
 import com.llc.drawit.domain.util.drawing.CPoint;
-import com.llc.drawit.domain.util.database.LoadManager;
+import com.llc.drawit.domain.util.callbacks.LoadManager;
 import com.llc.drawit.domain.util.drawing.Stroke;
 
 import java.util.ArrayList;

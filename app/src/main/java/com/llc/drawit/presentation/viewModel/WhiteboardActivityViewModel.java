@@ -16,6 +16,7 @@ import com.llc.drawit.domain.util.drawing.Stroke;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -26,16 +27,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 public class WhiteboardActivityViewModel extends ViewModel {
 
-    private MutableLiveData<Whiteboard> _currWhiteboard = new MutableLiveData<>();
+    private final MutableLiveData<Whiteboard> _currWhiteboard = new MutableLiveData<>();
     public LiveData<Whiteboard> currWhiteboard = _currWhiteboard;
 
-    private MutableLiveData<List<User>> _members = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<User>> _members = new MutableLiveData<>(new ArrayList<>());
     public LiveData<List<User>> members = _members;
 
-    private MutableLiveData<LinkedHashMap<Stroke, ArrayList<CPoint>>> _drawings = new MutableLiveData<>(new LinkedHashMap<>());
+    private final MutableLiveData<LinkedHashMap<Stroke, ArrayList<CPoint>>> _drawings = new MutableLiveData<>(new LinkedHashMap<>());
     public LiveData<LinkedHashMap<Stroke, ArrayList<CPoint>>> drawings = _drawings;
 
-    private WhiteboardRepository whiteboardRepository;
+    private final WhiteboardRepository whiteboardRepository;
 
     @Inject
     public WhiteboardActivityViewModel (WhiteboardRepository whiteboardRepository){
@@ -49,7 +50,7 @@ public class WhiteboardActivityViewModel extends ViewModel {
 
             _currWhiteboard.postValue(data.getData());
             whiteboardRepository.loadMembers(
-                    data.getData().getMembers(),
+                    data.getData().members(),
                     result -> {
                         if (result.getResultCode() == Result.FAILURE)
                             return;
@@ -64,12 +65,7 @@ public class WhiteboardActivityViewModel extends ViewModel {
                             return;
                         }
 
-                        LinkedHashMap<Stroke, ArrayList<CPoint>> drawings = result.getData();
-                        // Ensure that the HashMap is not null
-                        if (drawings == null) {
-                            drawings = new LinkedHashMap<>();
-                        }
-
+                        LinkedHashMap<Stroke, ArrayList<CPoint>> drawings = Optional.ofNullable(result.getData()).orElseGet(LinkedHashMap::new);
                         this._drawings.postValue(drawings);
                     }
             );
@@ -78,16 +74,14 @@ public class WhiteboardActivityViewModel extends ViewModel {
 
 
     public void addDrawing(Pair<Stroke, ArrayList<CPoint>> drawing) {
-        Whiteboard whiteboard = _currWhiteboard.getValue();
-        if (whiteboard == null) return;
-
-        whiteboardRepository.addUpdDrawing(whiteboard.getId(), drawing);
+        Optional.ofNullable(_currWhiteboard.getValue()).ifPresent(
+                whiteboard -> whiteboardRepository.addUpdDrawing(whiteboard.id(), drawing)
+        );
     }
 
     public void stopListening(){
-        Whiteboard whiteboard = _currWhiteboard.getValue();
-        if (whiteboard == null) return;
-
-        whiteboardRepository.stopDrawingsListener(whiteboard.getId());
+        Optional.ofNullable(_currWhiteboard.getValue()).ifPresent(
+                whiteboard -> whiteboardRepository.stopDrawingsListener(whiteboard.id())
+        );
     }
 }

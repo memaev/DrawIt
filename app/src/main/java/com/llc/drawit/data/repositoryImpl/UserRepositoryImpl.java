@@ -1,7 +1,6 @@
 package com.llc.drawit.data.repositoryImpl;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.llc.drawit.domain.entities.User;
 import com.llc.drawit.domain.entities.Whiteboard;
@@ -10,14 +9,13 @@ import com.llc.drawit.domain.repository.WhiteboardRepository;
 import com.llc.drawit.domain.util.Constants;
 import com.llc.drawit.domain.util.database.HFirebase;
 import com.llc.drawit.domain.util.database.LoadData;
-import com.llc.drawit.domain.util.database.LoadManager;
+import com.llc.drawit.domain.util.callbacks.LoadManager;
 import com.llc.drawit.domain.util.database.Result;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.llc.drawit.presentation.util.NNull;
-import com.llc.drawit.presentation.util.loading.LoadingAlertDialog;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -38,25 +38,11 @@ public class WhiteboardActivity extends AppCompatActivity {
         binding = ActivityWhiteboardBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                viewModel.stopListening();
-                startActivity(new Intent(WhiteboardActivity.this, MainActivity.class));
-                finish();
-            }
-        });
-
-        binding.btnBack.setOnClickListener(v -> {
-            viewModel.stopListening();
-            startActivity(new Intent(WhiteboardActivity.this, MainActivity.class));
-            finish();
-        });
+        setUpBackNavigation();
 
         viewModel = new ViewModelProvider(this).get(WhiteboardActivityViewModel.class);
 
         String whiteboardId = getIntent().getStringExtra(Constants.WHITEBOARD_ID);
-
         viewModel.loadWhiteboard(whiteboardId);
 
         binding.btnAddMember.setOnClickListener(v -> {
@@ -76,41 +62,49 @@ public class WhiteboardActivity extends AppCompatActivity {
 
         startStateObservers();
         setUpInstrumentsClickListeners();
+        initDrawView();
+    }
 
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        binding.drawView.init(pos -> {
-            AddTextDialog addTextDialog = new AddTextDialog(text -> binding.drawView.addText(pos, text));
-            addTextDialog.show(getSupportFragmentManager(), "add-text-dialog");
-        }, metrics, viewModel.drawings, WhiteboardActivity.this);
+    private void setUpBackNavigation() {
+        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                viewModel.stopListening();
+                startActivity(new Intent(WhiteboardActivity.this, MainActivity.class));
+                finish();
+            }
+        });
+
+        binding.btnBack.setOnClickListener(v -> {
+            viewModel.stopListening();
+            startActivity(new Intent(WhiteboardActivity.this, MainActivity.class));
+            finish();
+        });
     }
 
     private void setUpInstrumentsClickListeners() {
         // instruments switching
         binding.btnPen.setOnClickListener(v -> {
             binding.drawView.setCurrentInstrument(DrawingInstrument.PEN);
-            checkInstrument();
+            indicateSelectedInstrument();
 
-            PickColorDialog pickColorDialog = new PickColorDialog(
-                    color -> {
-                        binding.drawView.setCurrentColor(color);
-                    });
+            PickColorDialog pickColorDialog = new PickColorDialog(color -> binding.drawView.setCurrentColor(color));
             pickColorDialog.show(getSupportFragmentManager(), "pick-color-dialog");
         });
         binding.btnText.setOnClickListener(v -> {
             binding.drawView.setCurrentInstrument(DrawingInstrument.TEXT);
-            checkInstrument();
+            indicateSelectedInstrument();
         });
         binding.btnEraser.setOnClickListener(v -> {
             binding.drawView.setCurrentInstrument(DrawingInstrument.ERASE);
-            checkInstrument();
+            indicateSelectedInstrument();
         });
     }
 
     private void startStateObservers() {
         viewModel.currWhiteboard.observe(this, whiteboard -> {
             if (whiteboard==null) return;
-            binding.tvWhiteboardName.setText(whiteboard.getName());
+            binding.tvWhiteboardName.setText(whiteboard.name());
 
             binding.drawView.addListener(drawing -> viewModel.addDrawing(drawing));
         });
@@ -127,15 +121,24 @@ public class WhiteboardActivity extends AppCompatActivity {
         });
     }
 
+    private void initDrawView() {
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        binding.drawView.init(pos -> {
+            AddTextDialog addTextDialog = new AddTextDialog(text -> binding.drawView.addText(pos, text));
+            addTextDialog.show(getSupportFragmentManager(), "add-text-dialog");
+        }, metrics, viewModel.drawings, WhiteboardActivity.this);
+    }
+
     @Override
     protected void onResume() {
-        checkInstrument();
+        indicateSelectedInstrument();
 
         super.onResume();
     }
 
     // displaying what instrument is selected
-    private void checkInstrument() {
+    private void indicateSelectedInstrument() {
         DrawingInstrument picked = binding.drawView.getCurrentInstrument();
         binding.btnPen.setBackgroundResource((picked == DrawingInstrument.PEN) ? R.drawable.white_bg : R.drawable.transpanent_bg);
         binding.btnText.setBackgroundResource((picked == DrawingInstrument.TEXT) ? R.drawable.white_bg : R.drawable.transpanent_bg);
