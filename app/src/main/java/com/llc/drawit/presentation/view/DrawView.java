@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.concurrent.Executors;
 
+import lombok.Getter;
+
 public class DrawView extends View {
 
     public int BRUSH_SIZE = 5;
@@ -47,6 +49,7 @@ public class DrawView extends View {
 
     private DrawingUpdateListener drawingUpdateListener;
     private LinkedHashMap<Stroke, ArrayList<CPoint>> paths = new LinkedHashMap<>();
+    @Getter
     private DrawingInstrument currentInstrument = DrawingInstrument.PEN;
     private int currentColor;
     private OnAddText onAddTextListener;
@@ -189,8 +192,6 @@ public class DrawView extends View {
             textPaint.setColor(this.currentColor);
         }
     }
-
-    public DrawingInstrument getCurrentInstrument() { return this.currentInstrument; }
 
     public void addText(CPoint screenPos, String text) {
         if (largeCanvas == null) return;

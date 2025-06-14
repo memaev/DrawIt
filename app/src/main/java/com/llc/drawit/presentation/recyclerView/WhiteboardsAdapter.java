@@ -18,7 +18,7 @@ import java.util.List;
 
 public class WhiteboardsAdapter extends RecyclerView.Adapter<WhiteboardsAdapter.ViewHolder> {
 
-    private List<Whiteboard> whiteboards;
+    private final List<Whiteboard> whiteboards;
 
     public WhiteboardsAdapter(List<Whiteboard> whiteboards){
         this.whiteboards = whiteboards;
@@ -33,11 +33,11 @@ public class WhiteboardsAdapter extends RecyclerView.Adapter<WhiteboardsAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.tvWhiteboardName.setText(whiteboards.get(position).getName());
+        holder.tvWhiteboardName.setText(whiteboards.get(position).name());
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(holder.itemView.getContext(), WhiteboardActivity.class);
-            intent.putExtra(Constants.WHITEBOARD_ID, whiteboards.get(position).getId());
+            intent.putExtra(Constants.WHITEBOARD_ID, whiteboards.get(position).id());
             holder.itemView.getContext().startActivity(intent);
         });
     }

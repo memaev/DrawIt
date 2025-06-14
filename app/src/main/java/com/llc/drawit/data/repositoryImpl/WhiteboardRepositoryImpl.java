@@ -84,14 +84,15 @@ public class WhiteboardRepositoryImpl implements WhiteboardRepository {
         HFirebase.DB.child(Constants.WHITEBOARDS).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot whiteboardSnapshot : snapshot.getChildren()) {
+                whiteboardsIds.forEach(whiteboardId -> {
+                    DataSnapshot whiteboardSnapshot = snapshot.child(whiteboardId);
                     String id = whiteboardSnapshot.getKey();
                     String name = Objects.requireNonNull(whiteboardSnapshot.child(Constants.NAME).getValue()).toString();
                     String members = Objects.requireNonNull(whiteboardSnapshot.child(Constants.MEMBERS).getValue()).toString();
 
                     Whiteboard whiteboard = new Whiteboard(id, name, members);
                     whiteboards.add(whiteboard);
-                }
+                });
                 manager.onResult(new LoadData<>(Result.SUCCESS, whiteboards));
             }
 
