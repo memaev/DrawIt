@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/tv_whiteboard_name"
         android:textSize="23sp"
-        tools:text="Доска 1"
+        tools:text="Whiteboard 1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
