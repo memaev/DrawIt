@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.util.Pair;
+import android.view.View;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
@@ -13,6 +16,8 @@ import com.llc.drawit.databinding.ActivityMainBinding;
 import com.llc.drawit.domain.util.database.HFirebase;
 import com.llc.drawit.presentation.bottomSheet.BottomSheetNewWhiteboard;
 import com.llc.drawit.presentation.recyclerView.WhiteboardsAdapter;
+import com.llc.drawit.presentation.util.StringUtil;
+import com.llc.drawit.presentation.util.color.DefaultProfileImageColorsUtil;
 import com.llc.drawit.presentation.viewModel.MainActivityViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -53,8 +58,21 @@ public class MainActivity extends AppCompatActivity {
         // load and display info about the current user
         viewModel.loadCurrentUser();
         viewModel.currentUser.observe(this, user -> {
-            if (!user.getProfileImageUrl().isEmpty())
+            if (user.getProfileImageUrl().isEmpty()) {
+                binding.imageProfileUser.setVisibility(View.INVISIBLE);
+
+                // we want to display the initials of the user
+                Pair<Integer, Integer> randomColorsPair = DefaultProfileImageColorsUtil.getRandomColorsPair();
+                binding.defaultProfileImage.setBackgroundTintList(ColorStateList.valueOf(randomColorsPair.first));
+                binding.defaultProfileImage.setTextColor(getColor(randomColorsPair.second));
+
+                // display the initials
+                binding.defaultProfileImage.setText(StringUtil.getInitials(user.getName()));
+            }
+            else {
                 Glide.with(getBaseContext()).load(user.getProfileImageUrl()).into(binding.imageProfileUser);
+                binding.defaultProfileImage.setVisibility(View.GONE);
+            }
 
             binding.tvUsername.setText(user.getName());
             binding.tvUsertag.setText("@" + user.getTag());
