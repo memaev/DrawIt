@@ -9,7 +9,7 @@
 - 🧑‍🤝‍🧑 **Real-time Collaboration** – Work with friends on shared whiteboards using Firebase Realtime Database.
 - ✍️ **Drawing Tools** – Freehand drawing with 4 colors, text tool, and an eraser.
 - 🔐 **Authentication** – Secure sign-in using email and password via Firebase Authentication.
-- ☁️ **Cloud-Based** – All boards and data are stored safely in the cloud using Firebase Storage and Database.
+- ☁️ **Cloud-Based** – All boards and data are stored safely in the cloud using Firebase Realtime Database.
 - 💾 **Session Persistence** – Boards can be accessed later, making collaboration asynchronous as well.
 - 📱 **Modern Android Architecture** – Clean and maintainable codebase using MVVM and Dagger Hilt for dependency injection.
 
