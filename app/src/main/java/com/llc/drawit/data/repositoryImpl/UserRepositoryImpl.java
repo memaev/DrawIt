@@ -38,25 +38,6 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
-    public void checkRegistration(String uid, LoadManager<Boolean> manager) {
-        HFirebase.DB.child(Constants.USERS).child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (!snapshot.exists()){
-                    manager.onResult(new LoadData<>(Result.SUCCESS, false));
-                }else{
-                    manager.onResult(new LoadData<>(Result.SUCCESS, true));
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                manager.onResult(new LoadData<>(Result.FAILURE, false));
-            }
-        });
-    }
-
-    @Override
     public void register(User user, LoadManager<String> manager) {
         HFirebase.AUTH.createUserWithEmailAndPassword(user.getEmail(), user.getPassword())
                 .addOnCompleteListener(task -> {

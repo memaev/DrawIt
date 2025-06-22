@@ -7,7 +7,6 @@ import com.llc.drawit.domain.util.callbacks.LoadManager;
 import java.util.List;
 
 public interface UserRepository {
-    void checkRegistration(String uid, LoadManager<Boolean> manager);
     void register(User user, LoadManager<String> manager);
     void getWhiteboards(String uid, LoadManager<List<Whiteboard>> manager);
     void loadUser(String userId, LoadManager<User> manager);

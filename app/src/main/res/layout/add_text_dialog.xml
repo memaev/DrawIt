@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:background="@drawable/edit_text_background_shape"
-        android:hint="Введите текст..."
+        android:hint="@string/add_text"
         android:padding="10dp"
         />
 

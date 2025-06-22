@@ -12,7 +12,7 @@ public class StorageRepositoryImpl implements StorageRepository {
     @Override
     public void uploadImage(String uid, Uri path, LoadManager<String> manager) {
         if (uid == null || path == null) {
-            manager.onResult(new LoadData<>(Result.FAILURE, "Не удалось загрузить картинку"));
+            manager.onResult(new LoadData<>(Result.FAILURE, "Failed to load image"));
             return;
         }
 
@@ -23,11 +23,11 @@ public class StorageRepositoryImpl implements StorageRepository {
                     if (task1.isSuccessful()) {
                         manager.onResult(new LoadData<>(Result.SUCCESS, task1.getResult().toString()));
                     } else {
-                        manager.onResult(new LoadData<>(Result.FAILURE, "Не удалось загрузить картинку"));
+                        manager.onResult(new LoadData<>(Result.FAILURE, "Failed to load image"));
                     }
                 });
             } else {
-                manager.onResult(new LoadData<>(Result.FAILURE, "Не удалось загрузить картинку"));
+                manager.onResult(new LoadData<>(Result.FAILURE, "Failed to load image"));
             }
         });
     }

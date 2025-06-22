@@ -32,12 +32,12 @@ import lombok.Getter;
 
 public class DrawView extends View {
 
-    public int BRUSH_SIZE = 5;
-    public int ERASE_SIZE = 15;
-    public static final int COLOR_PEN = Color.RED;
-    public static final float TOUCH_TOLERANCE = 4;
-    public static final int DEFAULT_BG_COLOR = Color.WHITE;
-    public static final float CANVAS_SCALE_FACTOR = 2.0f; // how much the largeBitmap is bigger than the actual screen size
+    private static final int BRUSH_SIZE = 5;
+    private static final int ERASE_SIZE = 15;
+    private static final int COLOR_PEN = Color.RED;
+    private static final float TOUCH_TOLERANCE = 4;
+    private static final int DEFAULT_BG_COLOR = Color.WHITE;
+    private static final float CANVAS_SCALE_FACTOR = 2.0f; // how much the largeBitmap is bigger than the actual screen size
 
     private float mX, mY;
     private Paint paint;
@@ -308,8 +308,6 @@ public class DrawView extends View {
     private void touchUp() {
         if (!isDrawing || currentDrawingPath == null || currentStroke == null) return;
         // Path already drawn on largeCanvas during touchMove
-        // currentDrawingPath.lineTo(mX, mY); // Final point already added if quadTo was used
-        // largeCanvas.drawPath(currentDrawingPath, paint); // Final draw if needed
 
         Executors.newSingleThreadExecutor().execute(() -> {
             if (drawingUpdateListener != null && paths.containsKey(currentStroke)) {
@@ -359,8 +357,7 @@ public class DrawView extends View {
             isTwoFingerPanning = false; // Scaler handles focal point adjustment
             return true; // Event handled by scaler
         }
-        // If consumedByScaler is true but not inProgress (e.g. onScaleEnd),
-        // still might need to handle ACTION_UP for pointers.
+        // If consumedByScaler is true but not inProgress (e.g. onScaleEnd)
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
@@ -439,8 +436,6 @@ public class DrawView extends View {
                     // For simplicity, we just stop panning. New 1-finger draw will start on next ACTION_DOWN/MOVE.
                     int remainingPointerIndex = event.findPointerIndex(activePointerId);
                     if(remainingPointerIndex != -1 && currentInstrument != DrawingInstrument.TEXT){
-                        // Optionally, immediately start drawing with the remaining finger
-                        // touchStart(event.getX(remainingPointerIndex), event.getY(remainingPointerIndex));
                         isDrawing = false; // Require a new touch down or move to start drawing
                     }
 
@@ -463,8 +458,6 @@ public class DrawView extends View {
                 isTwoFingerPanning = false;
                 panPointerId1 = INVALID_POINTER_ID;
                 panPointerId2 = INVALID_POINTER_ID;
-                // currentDrawingPath = null; // Already handled or will be on next touchStart
-                // currentStroke = null;
                 invalidate();
                 break;
         }
