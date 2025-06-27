@@ -10,16 +10,16 @@ import com.llc.drawit.domain.util.database.Result;
 
 public class StorageRepositoryImpl implements StorageRepository {
     @Override
-    public void uploadImage(String uid, Uri path, LoadManager<String> manager) {
-        if (uid == null || path == null) {
+    public void uploadImage(String imageId, Uri path, LoadManager<String> manager) {
+        if (path == null) {
             manager.onResult(new LoadData<>(Result.FAILURE, "Failed to load image"));
             return;
         }
 
         // uploading the image to Firebase Storage, if the upload is successful, getting the link to download this image and calling the finish callback
-        HFirebase.STORAGE.child(uid).putFile(path).addOnCompleteListener(task -> {
+        HFirebase.STORAGE.child(imageId).putFile(path).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                HFirebase.STORAGE.child(uid).getDownloadUrl().addOnCompleteListener(task1 -> {
+                HFirebase.STORAGE.child(imageId).getDownloadUrl().addOnCompleteListener(task1 -> {
                     if (task1.isSuccessful()) {
                         manager.onResult(new LoadData<>(Result.SUCCESS, task1.getResult().toString()));
                     } else {
@@ -27,7 +27,7 @@ public class StorageRepositoryImpl implements StorageRepository {
                     }
                 });
             } else {
-                manager.onResult(new LoadData<>(Result.FAILURE, "Failed to load image"));
+                manager.onResult(new LoadData<>(Result.FAILURE, "Failed to load image, error: " + task.getException().getMessage()));
             }
         });
     }

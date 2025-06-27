@@ -15,6 +15,7 @@ import com.llc.drawit.domain.util.callbacks.LoadManager;
 import com.llc.drawit.domain.util.database.Result;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -42,7 +43,7 @@ public class RegisterActivityViewModel extends ViewModel {
     }
 
     public void savePickedProfileImageUri(Uri uri) {
-        _pickedUserProfileImage.setValue(uri);
+        _pickedUserProfileImage.postValue(uri);
     }
 
     public void setProfileImage(String profileImageUrl){
@@ -55,11 +56,7 @@ public class RegisterActivityViewModel extends ViewModel {
     }
 
     public void uploadImage(Uri imagePath, LoadManager<String> manager){
-        if (HFirebase.AUTH.getCurrentUser()==null){
-            manager.onResult(new LoadData<>(Result.FAILURE, null));
-            return;
-        }
-        storageRepository.uploadImage(HFirebase.AUTH.getCurrentUser().getUid(), imagePath, data -> {
+        storageRepository.uploadImage(UUID.randomUUID().toString(), imagePath, data -> {
             setProfileImage(data.getData());
             manager.onResult(data);
         });
@@ -70,7 +67,6 @@ public class RegisterActivityViewModel extends ViewModel {
         if (pickedUserProfileImage.getValue() != null) {
             uploadImage(pickedUserProfileImage.getValue(), result -> {
                 if (result.getData() != null) {
-                    user.setProfileImageUrl(result.getData());
                     userRepository.register(user, manager);
                     _loading.postValue(false);
                 }
