@@ -48,6 +48,12 @@ public class MainActivity extends AppCompatActivity {
             loadWhiteboards();
         });
 
+        binding.btnLogout.setOnClickListener(v -> {
+            HFirebase.AUTH.signOut();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        });
+
         binding.btnAddWhiteboard.setOnClickListener(v -> {
             BottomSheetNewWhiteboard bottomSheetNewWhiteboard = new BottomSheetNewWhiteboard();
             bottomSheetNewWhiteboard.show(getSupportFragmentManager(), "create-whiteboard-bottom-sheet");

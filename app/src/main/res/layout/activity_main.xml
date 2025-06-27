@@ -48,6 +48,20 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <ImageButton
+                android:id="@+id/btn_logout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_logout_24"
+                android:backgroundTint="@android:color/transparent"
+                app:tint="@color/white"
+                android:layout_marginStart="10dp"
+                app:layout_constraintStart_toEndOf="@id/image_profile_user"
+                app:layout_constraintTop_toTopOf="@id/image_profile_user"
+                app:layout_constraintBottom_toBottomOf="@id/image_profile_user"
+                />
+
+
             <LinearLayout
                 android:id="@+id/ll_tag_phone_number"
                 android:layout_width="wrap_content"
