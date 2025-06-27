@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.com.android.application)
     alias(libs.plugins.com.google.gms.google.services)
     alias(libs.plugins.com.google.dagger.hilt.android)
+    alias(libs.plugins.com.google.firebase.crashlytics)
 }
 
 android {
@@ -45,6 +46,7 @@ dependencies {
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.database)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.storage)
