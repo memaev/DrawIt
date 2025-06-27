@@ -26,6 +26,7 @@ import com.llc.drawit.domain.util.drawing.Stroke;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import lombok.Getter;
@@ -131,9 +132,13 @@ public class DrawView extends View {
         canvasHeight = (int) (metrics.heightPixels * CANVAS_SCALE_FACTOR);
 
         if (largeBitmap != null) {
-            largeBitmap.recycle();
+            largeBitmap.recycle(); // "kill" the old bitmap (mark it for the kill to GC)
         }
-        largeBitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888);
+        largeBitmap = Bitmap.createBitmap(
+                canvasWidth,
+                canvasHeight,
+                Bitmap.Config.ARGB_8888 /* 8 bits for transparency, 8 bits for red, 8 bits for green, 8 bits for blue */
+        );
         largeCanvas = new Canvas(largeBitmap);
         largeCanvas.drawColor(DEFAULT_BG_COLOR);
 
@@ -247,6 +252,7 @@ public class DrawView extends View {
         float viewPortWidthOnCanvas = getWidth() / currentScaleFactor;
         float viewPortHeightOnCanvas = getHeight() / currentScaleFactor;
 
+        // the portion of largeBitmap that is going to be displayed on the screen
         Rect srcRect = new Rect(
                 (int) customXOffset,
                 (int) customYOffset,
@@ -257,6 +263,7 @@ public class DrawView extends View {
         // Define the destination rectangle on the view's canvas (entire view)
         Rect destRect = new Rect(0, 0, getWidth(), getHeight());
 
+        // draw the portion of largeBitmap on the viewCanvas (the canvas that is currently visible on the screen)
         viewCanvas.drawBitmap(largeBitmap, srcRect, destRect, bitmapPaint);
         viewCanvas.restore();
     }
@@ -271,10 +278,12 @@ public class DrawView extends View {
         int strokeWidth = (currentInstrument == DrawingInstrument.ERASE) ? ERASE_SIZE : BRUSH_SIZE;
         currentStroke = new Stroke(strokeColor, strokeWidth, currentDrawingPath, System.currentTimeMillis());
 
-        paths.put(currentStroke, new ArrayList<>()); // Add to map
-        paths.get(currentStroke).add(new CPoint(canvasX, canvasY)); // Add first point
+        CPoint firstPoint = new CPoint(canvasX, canvasY);
+        paths.put(currentStroke, new ArrayList<>(
+                List.of(firstPoint)
+        )); // Add to map with already added first point
 
-        currentDrawingPath.moveTo(canvasX, canvasY);
+        currentDrawingPath.moveTo(canvasX, canvasY); // tell the global canvas where to start drawing
         mX = canvasX; // Store canvas coordinates
         mY = canvasY;
         isDrawing = true;
